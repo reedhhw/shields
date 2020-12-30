@@ -1,11 +1,11 @@
 {
-	"dockerfiles": {
-		"Dockerfile": [
-			{
-				"name": "node",
-				"tag": "10-alpine",
-				"digest": ""
-			}
-		]
-	}
+  "dockerfiles": {
+    "Dockerfile": [
+      {
+        "name": "node",
+        "tag": "10-alpine",
+        "digest": ""
+      }
+    ]
+  }
 }
