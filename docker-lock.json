@@ -1,11 +1,11 @@
 {
-	"dockerfiles": {
-		"Dockerfile": [
-			{
-				"name": "node",
-				"tag": "10-alpine",
-				"digest": "4504e4aa30f4258a19f59e4adb7b9042fe37d80c923b0af21e4a21cfb33cf433"
-			}
-		]
-	}
+  "dockerfiles": {
+    "Dockerfile": [
+      {
+        "name": "node",
+        "tag": "10-alpine",
+        "digest": "4504e4aa30f4258a19f59e4adb7b9042fe37d80c923b0af21e4a21cfb33cf433"
+      }
+    ]
+  }
 }
