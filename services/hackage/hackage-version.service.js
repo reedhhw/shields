@@ -1,33 +1,23 @@
-'use strict'
+import { renderVersionBadge } from '../version.js'
+import { BaseService, InvalidResponse } from '../index.js'
 
-const { renderVersionBadge } = require('../version')
-const { BaseService, InvalidResponse } = require('..')
+export default class HackageVersion extends BaseService {
+  static category = 'version'
 
-module.exports = class HackageVersion extends BaseService {
-  static get category() {
-    return 'version'
+  static route = {
+    base: 'hackage/v',
+    pattern: ':packageName',
   }
 
-  static get route() {
-    return {
-      base: 'hackage/v',
-      pattern: ':packageName',
-    }
-  }
+  static examples = [
+    {
+      title: 'Hackage',
+      namedParams: { packageName: 'lens' },
+      staticPreview: renderVersionBadge({ version: '4.1.7' }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Hackage',
-        namedParams: { packageName: 'lens' },
-        staticPreview: renderVersionBadge({ version: '4.1.7' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'hackage' }
-  }
+  static defaultBadgeData = { label: 'hackage' }
 
   async fetch({ packageName }) {
     return this._request({

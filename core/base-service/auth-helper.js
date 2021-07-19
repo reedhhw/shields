@@ -1,7 +1,5 @@
-'use strict'
-
-const { URL } = require('url')
-const { InvalidParameter } = require('./errors')
+import { URL } from 'url'
+import { InvalidParameter } from './errors.js'
 
 class AuthHelper {
   constructor(
@@ -183,10 +181,8 @@ class AuthHelper {
   }
 
   static _mergeQueryParams(requestParams, query) {
-    const {
-      options: { qs: existingQuery, ...restOptions } = {},
-      ...rest
-    } = requestParams
+    const { options: { qs: existingQuery, ...restOptions } = {}, ...rest } =
+      requestParams
     return {
       options: {
         qs: {
@@ -209,4 +205,4 @@ class AuthHelper {
   }
 }
 
-module.exports = { AuthHelper }
+export { AuthHelper }

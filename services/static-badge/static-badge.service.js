@@ -1,19 +1,13 @@
-'use strict'
+import { escapeFormat } from '../../core/badge-urls/path-helpers.js'
+import { BaseStaticService } from '../index.js'
 
-const { escapeFormat } = require('../../core/badge-urls/path-helpers')
-const { BaseStaticService } = require('..')
+export default class StaticBadge extends BaseStaticService {
+  static category = 'static'
 
-module.exports = class StaticBadge extends BaseStaticService {
-  static get category() {
-    return 'static'
-  }
-
-  static get route() {
-    return {
-      base: '',
-      format: '(?::|badge/)((?:[^-]|--)*?)-?((?:[^-]|--)*)-((?:[^-.]|--)+)',
-      capture: ['label', 'message', 'color'],
-    }
+  static route = {
+    base: '',
+    format: '(?::|badge/)((?:[^-]|--)*?)-?((?:[^-]|--)*)-((?:[^-.]|--)+)',
+    capture: ['label', 'message', 'color'],
   }
 
   handle({ label, message, color }) {

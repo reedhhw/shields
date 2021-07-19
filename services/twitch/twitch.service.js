@@ -1,46 +1,38 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const TwitchBase = require('./twitch-base')
+import Joi from 'joi'
+import TwitchBase from './twitch-base.js'
 
 const helixSchema = Joi.object({
   data: Joi.array().required(),
 })
 
-module.exports = class TwitchStatus extends TwitchBase {
-  static get category() {
-    return 'activity'
+export default class TwitchStatus extends TwitchBase {
+  static category = 'social'
+
+  static route = {
+    base: 'twitch/status',
+    pattern: ':user',
   }
 
-  static get route() {
-    return {
-      base: 'twitch/status',
-      pattern: ':user',
-    }
-  }
-
-  static get examples() {
-    const preview = this.render({
-      user: 'andyonthewings',
-      isLive: true,
-    })
-    // link[] is not allowed in examples
-    delete preview.link
-    return [
-      {
-        title: 'Twitch Status',
-        namedParams: {
-          user: 'andyonthewings',
-        },
-        staticPreview: preview,
+  static examples = [
+    {
+      title: 'Twitch Status',
+      namedParams: {
+        user: 'andyonthewings',
       },
-    ]
-  }
+      queryParams: { style: 'social' },
+      staticPreview: {
+        message: 'live',
+        color: 'red',
+        style: 'social',
+      },
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'twitch',
-    }
+  static _cacheLength = 30
+
+  static defaultBadgeData = {
+    label: 'twitch',
+    namedLogo: 'twitch',
   }
 
   static render({ user, isLive }) {

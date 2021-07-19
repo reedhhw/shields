@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { optionalUrl } = require('../validators')
-const { BaseJsonService } = require('..')
-const { authConfig } = require('./jira-common')
+import Joi from 'joi'
+import { optionalUrl } from '../validators.js'
+import { BaseJsonService } from '../index.js'
+import { authConfig } from './jira-common.js'
 
 const queryParamSchema = Joi.object({
   baseUrl: optionalUrl.required(),
@@ -20,45 +18,35 @@ const schema = Joi.object({
   }).required(),
 }).required()
 
-module.exports = class JiraIssue extends BaseJsonService {
-  static get category() {
-    return 'issue-tracking'
+export default class JiraIssue extends BaseJsonService {
+  static category = 'issue-tracking'
+
+  static route = {
+    base: 'jira/issue',
+    pattern: ':issueKey',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'jira/issue',
-      pattern: ':issueKey',
-      queryParamSchema,
-    }
-  }
+  static auth = authConfig
 
-  static get auth() {
-    return authConfig
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'JIRA issue',
-        namedParams: {
-          issueKey: 'KAFKA-2896',
-        },
-        queryParams: {
-          baseUrl: 'https://issues.apache.org/jira',
-        },
-        staticPreview: this.render({
-          issueKey: 'KAFKA-2896',
-          statusName: 'Resolved',
-          statusColor: 'green',
-        }),
+  static examples = [
+    {
+      title: 'JIRA issue',
+      namedParams: {
+        issueKey: 'KAFKA-2896',
       },
-    ]
-  }
+      queryParams: {
+        baseUrl: 'https://issues.apache.org/jira',
+      },
+      staticPreview: this.render({
+        issueKey: 'KAFKA-2896',
+        statusName: 'Resolved',
+        statusColor: 'green',
+      }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { color: 'lightgrey', label: 'jira' }
-  }
+  static defaultBadgeData = { color: 'lightgrey', label: 'jira' }
 
   static render({ issueKey, statusName, statusColor }) {
     let color = 'lightgrey'

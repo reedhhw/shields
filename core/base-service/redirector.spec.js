@@ -1,10 +1,8 @@
-'use strict'
-
-const Camp = require('@shields_io/camp')
-const portfinder = require('portfinder')
-const { expect } = require('chai')
-const got = require('../got-test-client')
-const redirector = require('./redirector')
+import Camp from '@shields_io/camp'
+import portfinder from 'portfinder'
+import { expect } from 'chai'
+import got from '../got-test-client.js'
+import redirector from './redirector.js'
 
 describe('Redirector', function () {
   const route = {
@@ -45,6 +43,24 @@ describe('Redirector', function () {
     expect(() =>
       redirector({ route, category, transformPath }).validateDefinition()
     ).to.throw('"dateAdded" is required')
+  })
+
+  it('sets specified example', function () {
+    const examples = [
+      {
+        title: 'very old service',
+        pattern: ':namedParamA',
+        namedParams: {
+          namedParamA: 'namedParamAValue',
+        },
+        staticPreview: {
+          label: 'service',
+          message: 'v0.14.0',
+          color: 'blue',
+        },
+      },
+    ]
+    expect(redirector({ ...attrs, examples }).examples).to.equal(examples)
   })
 
   describe('ScoutCamp integration', function () {
@@ -118,6 +134,20 @@ describe('Redirector', function () {
       expect(statusCode).to.equal(301)
       expect(headers.location).to.equal(
         '/new/service/hello-world.svg?color=123&style=flat-square'
+      )
+    })
+
+    it('should correctly encode the redirect URL', async function () {
+      const { statusCode, headers } = await got(
+        `${baseUrl}/very/old/service/hello%0Dworld.svg?foobar=a%0Db`,
+        {
+          followRedirect: false,
+        }
+      )
+
+      expect(statusCode).to.equal(301)
+      expect(headers.location).to.equal(
+        '/new/service/hello%0Dworld.svg?foobar=a%0Db'
       )
     })
 

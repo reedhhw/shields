@@ -1,11 +1,9 @@
-'use strict'
-
-const { URL } = require('url')
-const Joi = require('@hapi/joi')
-const { errorMessages } = require('../dynamic-common')
-const { optionalUrl } = require('../validators')
-const { fetchEndpointData } = require('../endpoint-common')
-const { BaseJsonService, InvalidParameter } = require('..')
+import { URL } from 'url'
+import Joi from 'joi'
+import { errorMessages } from '../dynamic-common.js'
+import { optionalUrl } from '../validators.js'
+import { fetchEndpointData } from '../endpoint-common.js'
+import { BaseJsonService, InvalidParameter } from '../index.js'
 
 const blockedDomains = ['github.com', 'shields.io']
 
@@ -13,28 +11,16 @@ const queryParamSchema = Joi.object({
   url: optionalUrl.required(),
 }).required()
 
-module.exports = class Endpoint extends BaseJsonService {
-  static get category() {
-    return 'dynamic'
+export default class Endpoint extends BaseJsonService {
+  static category = 'dynamic'
+  static route = {
+    base: 'endpoint',
+    pattern: '',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'endpoint',
-      pattern: '',
-      queryParamSchema,
-    }
-  }
-
-  static get _cacheLength() {
-    return 300
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'custom badge',
-    }
-  }
+  static _cacheLength = 300
+  static defaultBadgeData = { label: 'custom badge' }
 
   static render({
     isError,
@@ -67,7 +53,14 @@ module.exports = class Endpoint extends BaseJsonService {
   }
 
   async handle(namedParams, { url }) {
-    const { protocol, hostname } = new URL(url)
+    let protocol, hostname
+    try {
+      const parsedUrl = new URL(url)
+      protocol = parsedUrl.protocol
+      hostname = parsedUrl.hostname
+    } catch (e) {
+      throw new InvalidParameter({ prettyMessage: 'invalid url' })
+    }
     if (protocol !== 'https:') {
       throw new InvalidParameter({ prettyMessage: 'please use https' })
     }

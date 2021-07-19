@@ -1,7 +1,5 @@
-'use strict'
-
-const { test, given } = require('sazerac')
-const GithubDeployments = require('./github-deployments.service')
+import { test, given } from 'sazerac'
+import GithubDeployments from './github-deployments.service.js'
 
 describe('GithubDeployments', function () {
   test(GithubDeployments.render, () => {
@@ -21,6 +19,12 @@ describe('GithubDeployments', function () {
       state: 'IN_PROGRESS',
     }).expect({
       message: 'in progress',
+      color: undefined,
+    })
+    given({
+      state: 'NO_STATUS',
+    }).expect({
+      message: 'no status yet',
       color: undefined,
     })
   })
@@ -47,7 +51,9 @@ describe('GithubDeployments', function () {
           },
         },
       },
-    }).expectError('Not Found: deployment has no status (yet)')
+    }).expect({
+      state: 'NO_STATUS',
+    })
     given({
       data: {
         repository: {

@@ -1,53 +1,35 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { documentation, errorMessagesFor } = require('./github-helpers')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { documentation, errorMessagesFor } from './github-helpers.js'
 
 const schema = Joi.object({
   followers: nonNegativeInteger,
 }).required()
 
-module.exports = class GithubFollowers extends GithubAuthV3Service {
-  static get category() {
-    return 'social'
-  }
+export default class GithubFollowers extends GithubAuthV3Service {
+  static category = 'social'
+  static route = { base: 'github/followers', pattern: ':user' }
+  static examples = [
+    {
+      title: 'GitHub followers',
+      namedParams: { user: 'espadrine' },
+      staticPreview: Object.assign(this.render({ followers: 150 }), {
+        label: 'Follow',
+        style: 'social',
+      }),
+      queryParams: { label: 'Follow' },
+      documentation,
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'github/followers',
-      pattern: ':user',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub followers',
-        namedParams: { user: 'espadrine' },
-        staticPreview: Object.assign(this.render({ followers: 150 }), {
-          label: 'Follow',
-          style: 'social',
-        }),
-        queryParams: { label: 'Follow' },
-        documentation,
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'followers',
-      namedLogo: 'github',
-    }
-  }
+  static defaultBadgeData = { label: 'followers', namedLogo: 'github' }
 
   static render({ followers }) {
     return {
       message: metric(followers),
-      color: '4183C4',
+      color: 'blue',
     }
   }
 

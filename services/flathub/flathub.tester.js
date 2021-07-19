@@ -1,7 +1,6 @@
-'use strict'
-
-const { isVPlusDottedVersionNClauses } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import { isVPlusDottedVersionNClauses } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('Flathub (valid)').get('/org.mozilla.firefox.json').expectBadge({
   label: 'flathub',
@@ -22,4 +21,4 @@ t.create('Flathub (valid)')
 
 t.create('Flathub (not found)')
   .get('/not.a.package.json')
-  .expectBadge({ label: 'flathub', message: 'not.a.package not found' })
+  .expectBadge({ label: 'flathub', message: 'not found' })

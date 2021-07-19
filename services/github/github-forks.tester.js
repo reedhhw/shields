@@ -1,13 +1,13 @@
-'use strict'
-
-const { isMetric } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import { isMetric } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('Forks')
   .get('/badges/shields.json')
   .expectBadge({
     label: 'forks',
     message: isMetric,
+    color: 'blue',
     link: [
       'https://github.com/badges/shields/fork',
       'https://github.com/badges/shields/network',

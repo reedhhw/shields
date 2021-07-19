@@ -1,39 +1,27 @@
-'use strict'
-
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseService } = require('..')
-const {
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseService } from '../index.js'
+import {
   dockerBlue,
   buildDockerUrl,
   getDockerHubUser,
-} = require('./docker-helpers')
+} from './docker-helpers.js'
 
-module.exports = class DockerStars extends BaseService {
-  static get category() {
-    return 'rating'
-  }
-
-  static get route() {
-    return buildDockerUrl('stars')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Docker Stars',
-        namedParams: {
-          user: '_',
-          repo: 'ubuntu',
-        },
-        staticPreview: this.render({ stars: 9000 }),
+export default class DockerStars extends BaseService {
+  static category = 'rating'
+  static route = buildDockerUrl('stars')
+  static examples = [
+    {
+      title: 'Docker Stars',
+      namedParams: {
+        user: '_',
+        repo: 'ubuntu',
       },
-    ]
-  }
+      staticPreview: this.render({ stars: 9000 }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'docker stars' }
-  }
+  static defaultBadgeData = { label: 'docker stars' }
 
   static render({ stars }) {
     return {

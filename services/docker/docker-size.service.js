@@ -1,15 +1,13 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const prettyBytes = require('pretty-bytes')
-const { nonNegativeInteger } = require('../validators')
-const { latest } = require('../version')
-const { BaseJsonService, NotFound } = require('..')
-const {
+import Joi from 'joi'
+import prettyBytes from 'pretty-bytes'
+import { nonNegativeInteger } from '../validators.js'
+import { latest } from '../version.js'
+import { BaseJsonService, NotFound } from '../index.js'
+import {
   buildDockerUrl,
   getDockerHubUser,
   getMultiPageData,
-} = require('./docker-helpers')
+} from './docker-helpers.js'
 
 const buildSchema = Joi.object({
   name: Joi.string().required(),
@@ -30,46 +28,33 @@ const queryParamSchema = Joi.object({
   sort: Joi.string().valid('date', 'semver').default('date'),
 }).required()
 
-module.exports = class DockerSize extends BaseJsonService {
-  static get category() {
-    return 'size'
-  }
+export default class DockerSize extends BaseJsonService {
+  static category = 'size'
+  static route = { ...buildDockerUrl('image-size', true), queryParamSchema }
+  static examples = [
+    {
+      title: 'Docker Image Size (latest by date)',
+      pattern: ':user/:repo',
+      namedParams: { user: 'fedora', repo: 'apache' },
+      queryParams: { sort: 'date' },
+      staticPreview: this.render({ size: 126000000 }),
+    },
+    {
+      title: 'Docker Image Size (latest semver)',
+      pattern: ':user/:repo',
+      namedParams: { user: 'fedora', repo: 'apache' },
+      queryParams: { sort: 'semver' },
+      staticPreview: this.render({ size: 136000000 }),
+    },
+    {
+      title: 'Docker Image Size (tag)',
+      pattern: ':user/:repo/:tag',
+      namedParams: { user: 'fedora', repo: 'apache', tag: 'latest' },
+      staticPreview: this.render({ size: 103000000 }),
+    },
+  ]
 
-  static get route() {
-    return { ...buildDockerUrl('image-size', true), queryParamSchema }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Docker Image Size (latest by date)',
-        pattern: ':user/:repo',
-        namedParams: { user: 'fedora', repo: 'apache' },
-        queryParams: { sort: 'date' },
-        staticPreview: this.render({ size: 126000000 }),
-      },
-      {
-        title: 'Docker Image Size (latest semver)',
-        pattern: ':user/:repo',
-        namedParams: { user: 'fedora', repo: 'apache' },
-        queryParams: { sort: 'semver' },
-        staticPreview: this.render({ size: 136000000 }),
-      },
-      {
-        title: 'Docker Image Size (tag)',
-        pattern: ':user/:repo/:tag',
-        namedParams: { user: 'fedora', repo: 'apache', tag: 'latest' },
-        staticPreview: this.render({ size: 103000000 }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'image size',
-      color: 'blue',
-    }
-  }
+  static defaultBadgeData = { label: 'image size', color: 'blue' }
 
   static render({ size }) {
     return { message: prettyBytes(size) }

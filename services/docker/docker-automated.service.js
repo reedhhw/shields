@@ -1,42 +1,30 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { BaseJsonService } = require('..')
-const {
+import Joi from 'joi'
+import { BaseJsonService } from '../index.js'
+import {
   dockerBlue,
   buildDockerUrl,
   getDockerHubUser,
-} = require('./docker-helpers')
+} from './docker-helpers.js'
 
 const automatedBuildSchema = Joi.object({
   is_automated: Joi.boolean().required(),
 }).required()
 
-module.exports = class DockerAutomatedBuild extends BaseJsonService {
-  static get category() {
-    return 'build'
-  }
-
-  static get route() {
-    return buildDockerUrl('automated')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Docker Automated build',
-        namedParams: {
-          user: 'jrottenberg',
-          repo: 'ffmpeg',
-        },
-        staticPreview: this.render({ isAutomated: true }),
+export default class DockerAutomatedBuild extends BaseJsonService {
+  static category = 'build'
+  static route = buildDockerUrl('automated')
+  static examples = [
+    {
+      title: 'Docker Automated build',
+      namedParams: {
+        user: 'jrottenberg',
+        repo: 'ffmpeg',
       },
-    ]
-  }
+      staticPreview: this.render({ isAutomated: true }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'docker build' }
-  }
+  static defaultBadgeData = { label: 'docker build' }
 
   static render({ isAutomated }) {
     if (isAutomated) {

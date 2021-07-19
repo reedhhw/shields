@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { coveragePercentage, letterScore } = require('../color-formatters')
-const { BaseJsonService, NotFound } = require('..')
-const { keywords, isLetterGrade, fetchRepo } = require('./codeclimate-common')
+import Joi from 'joi'
+import { coveragePercentage, letterScore } from '../color-formatters.js'
+import { BaseJsonService, NotFound } from '../index.js'
+import { keywords, isLetterGrade, fetchRepo } from './codeclimate-common.js'
 
 const schema = Joi.object({
   data: Joi.object({
@@ -16,36 +14,29 @@ const schema = Joi.object({
   }).allow(null),
 }).required()
 
-module.exports = class CodeclimateCoverage extends BaseJsonService {
-  static get category() {
-    return 'coverage'
+export default class CodeclimateCoverage extends BaseJsonService {
+  static category = 'coverage'
+  static route = {
+    base: 'codeclimate',
+    pattern: ':format(coverage|coverage-letter)/:user/:repo',
   }
 
-  static get route() {
-    return {
-      base: 'codeclimate',
-      pattern: ':format(coverage|coverage-letter)/:user/:repo',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Code Climate coverage',
-        namedParams: {
-          format: 'coverage',
-          user: 'codeclimate',
-          repo: 'codeclimate',
-        },
-        staticPreview: this.render({
-          format: 'coverage',
-          percentage: 95.123,
-          letter: 'A',
-        }),
-        keywords,
+  static examples = [
+    {
+      title: 'Code Climate coverage',
+      namedParams: {
+        format: 'coverage',
+        user: 'codeclimate',
+        repo: 'codeclimate',
       },
-    ]
-  }
+      staticPreview: this.render({
+        format: 'coverage',
+        percentage: 95.123,
+        letter: 'A',
+      }),
+      keywords,
+    },
+  ]
 
   static render({ wantLetter, percentage, letter }) {
     if (wantLetter) {

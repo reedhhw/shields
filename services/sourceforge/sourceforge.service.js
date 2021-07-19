@@ -1,11 +1,9 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const moment = require('moment')
-const { metric } = require('../text-formatters')
-const { downloadCount } = require('../color-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import moment from 'moment'
+import { metric } from '../text-formatters.js'
+import { downloadCount } from '../color-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   total: nonNegativeInteger,
@@ -31,51 +29,43 @@ const intervalMap = {
   },
 }
 
-module.exports = class Sourceforge extends BaseJsonService {
-  static get category() {
-    return 'downloads'
+export default class Sourceforge extends BaseJsonService {
+  static category = 'downloads'
+
+  static route = {
+    base: 'sourceforge',
+    pattern: ':interval(dt|dm|dw|dd)/:project/:folder*',
   }
 
-  static get route() {
-    return {
-      base: 'sourceforge',
-      pattern: ':interval(dt|dm|dw|dd)/:project/:folder*',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'SourceForge',
-        pattern: ':interval(dt|dm|dw|dd)/:project',
-        namedParams: {
-          interval: 'dm',
-          project: 'sevenzip',
-        },
-        staticPreview: this.render({
-          downloads: 215990,
-          interval: 'dm',
-        }),
+  static examples = [
+    {
+      title: 'SourceForge',
+      pattern: ':interval(dt|dm|dw|dd)/:project',
+      namedParams: {
+        interval: 'dm',
+        project: 'sevenzip',
       },
-      {
-        title: 'SourceForge',
-        pattern: ':interval(dt|dm|dw|dd)/:project/:folder',
-        namedParams: {
-          interval: 'dm',
-          project: 'arianne',
-          folder: 'stendhal',
-        },
-        staticPreview: this.render({
-          downloads: 550,
-          interval: 'dm',
-        }),
+      staticPreview: this.render({
+        downloads: 215990,
+        interval: 'dm',
+      }),
+    },
+    {
+      title: 'SourceForge',
+      pattern: ':interval(dt|dm|dw|dd)/:project/:folder',
+      namedParams: {
+        interval: 'dm',
+        project: 'arianne',
+        folder: 'stendhal',
       },
-    ]
-  }
+      staticPreview: this.render({
+        downloads: 550,
+        interval: 'dm',
+      }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'sourceforge' }
-  }
+  static defaultBadgeData = { label: 'sourceforge' }
 
   static render({ downloads, interval }) {
     return {

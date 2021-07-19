@@ -1,7 +1,6 @@
-'use strict'
-
-const { isVPlusDottedVersionAtLeastOne } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import { isVPlusDottedVersionAtLeastOne } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('Go version').get('/gohugoio/hugo.json').expectBadge({
   label: 'Go',
@@ -15,7 +14,7 @@ t.create('Go version (from branch)')
     message: isVPlusDottedVersionAtLeastOne,
   })
 
-t.create('Go version (mongorepo)')
+t.create('Go version (monorepo)')
   .get(`/golang/go.json?filename=${encodeURIComponent('src/go.mod')}`)
   .expectBadge({
     label: 'Go',

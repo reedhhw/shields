@@ -1,42 +1,38 @@
 'use strict'
 
 const anafanafo = require('anafanafo')
+const { brightness } = require('./color')
+const { XmlElement, escapeXml } = require('./xml')
 
-const fontFamily = 'font-family="Verdana,Geneva,DejaVu Sans,sans-serif"'
+// https://github.com/badges/shields/pull/1132
+const FONT_SCALE_UP_FACTOR = 10
+const FONT_SCALE_DOWN_VALUE = 'scale(.1)'
+
+const FONT_FAMILY = 'Verdana,Geneva,DejaVu Sans,sans-serif'
+const fontFamily = `font-family="${FONT_FAMILY}"`
 const socialFontFamily =
   'font-family="Helvetica Neue,Helvetica,Arial,sans-serif"'
+const brightnessThreshold = 0.69
 
 function capitalize(s) {
   return `${s.charAt(0).toUpperCase()}${s.slice(1)}`
 }
 
-function escapeXml(s) {
-  if (s === undefined || typeof s !== 'string') {
-    return undefined
+function colorsForBackground(color) {
+  if (brightness(color) <= brightnessThreshold) {
+    return { textColor: '#fff', shadowColor: '#010101' }
   } else {
-    return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;')
+    return { textColor: '#333', shadowColor: '#ccc' }
   }
 }
 
 function roundUpToOdd(val) {
-  // Increase chances of pixel grid alignment.
   return val % 2 === 0 ? val + 1 : val
 }
 
-function preferredWidthOf(str) {
-  return roundUpToOdd((anafanafo(str) / 10) | 0)
-}
-
-function computeWidths({ label, message }) {
-  return {
-    labelWidth: preferredWidthOf(label),
-    messageWidth: preferredWidthOf(message),
-  }
+function preferredWidthOf(str, options) {
+  // Increase chances of pixel grid alignment.
+  return roundUpToOdd(anafanafo(str, options) | 0)
 }
 
 function createAccessibleText({ label, message }) {
@@ -74,22 +70,19 @@ function renderLogo({
   logoWidth = 14,
   logoPadding = 0,
 }) {
-  if (!logo) {
+  if (logo) {
+    const logoHeight = 14
+    const y = (badgeHeight - logoHeight) / 2
+    const x = horizPadding
     return {
-      hasLogo: false,
-      totalLogoWidth: 0,
-      renderedLogo: '',
+      hasLogo: true,
+      totalLogoWidth: logoWidth + logoPadding,
+      renderedLogo: `<image x="${x}" y="${y}" width="${logoWidth}" height="${logoHeight}" xlink:href="${escapeXml(
+        logo
+      )}"/>`,
     }
-  }
-  const logoHeight = 14
-  const y = (badgeHeight - logoHeight) / 2
-  const x = horizPadding
-  return {
-    hasLogo: true,
-    totalLogoWidth: logoWidth + logoPadding,
-    renderedLogo: `<image x="${x}" y="${y}" width="${logoWidth}" height="14" xlink:href="${escapeXml(
-      logo
-    )}"/>`,
+  } else {
+    return { hasLogo: false, totalLogoWidth: 0, renderedLogo: '' }
   }
 }
 
@@ -118,12 +111,13 @@ function renderText({
   height,
   verticalMargin = 0,
   shadow = false,
+  color,
 }) {
   if (!content.length) {
     return { renderedText: '', width: 0 }
   }
 
-  const textLength = preferredWidthOf(content)
+  const textLength = preferredWidthOf(content, { font: '11px Verdana' })
   const escapedContent = escapeXml(content)
 
   const shadowMargin = 150 + verticalMargin
@@ -133,10 +127,11 @@ function renderText({
   const x = 10 * (leftMargin + 0.5 * textLength + horizPadding)
 
   let renderedText = ''
+  const { textColor, shadowColor } = colorsForBackground(color)
   if (shadow) {
-    renderedText = `<text aria-hidden="true" x="${x}" y="${shadowMargin}" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${outTextLength}">${escapedContent}</text>`
+    renderedText = `<text aria-hidden="true" x="${x}" y="${shadowMargin}" fill="${shadowColor}" fill-opacity=".3" transform="scale(.1)" textLength="${outTextLength}">${escapedContent}</text>`
   }
-  renderedText += `<text x="${x}" y="${textMargin}" transform="scale(.1)" fill="#fff" textLength="${outTextLength}">${escapedContent}</text>`
+  renderedText += `<text x="${x}" y="${textMargin}" transform="scale(.1)" fill="${textColor}" textLength="${outTextLength}">${escapedContent}</text>`
 
   return {
     renderedText: link
@@ -172,10 +167,6 @@ function renderBadge(
         : main
     }
     </svg>`
-}
-
-function stripXmlWhitespace(xml) {
-  return xml.replace(/>\s+/g, '>').replace(/<\s+/g, '<').trim()
 }
 
 class Badge {
@@ -234,6 +225,7 @@ class Badge {
       height: this.constructor.height,
       verticalMargin: this.constructor.verticalMargin,
       shadow: this.constructor.shadow,
+      color: labelColor,
     })
 
     const leftWidth = hasLabel
@@ -257,6 +249,7 @@ class Badge {
       height: this.constructor.height,
       verticalMargin: this.constructor.verticalMargin,
       shadow: this.constructor.shadow,
+      color,
     })
 
     let rightWidth = messageWidth + 2 * horizPadding
@@ -280,6 +273,10 @@ class Badge {
     this.renderedLogo = renderedLogo
     this.renderedLabel = renderedLabel
     this.renderedMessage = renderedMessage
+  }
+
+  static render(params) {
+    return new this(params).render()
   }
 
   render() {
@@ -432,30 +429,6 @@ class FlatSquare extends Badge {
   }
 }
 
-function plastic(params) {
-  const badge = new Plastic(params)
-  if (params.minify) {
-    return stripXmlWhitespace(badge.render())
-  }
-  return badge.render()
-}
-
-function flat(params) {
-  const badge = new Flat(params)
-  if (params.minify) {
-    return stripXmlWhitespace(badge.render())
-  }
-  return badge.render()
-}
-
-function flatSquare(params) {
-  const badge = new FlatSquare(params)
-  if (params.minify) {
-    return stripXmlWhitespace(badge.render())
-  }
-  return badge.render()
-}
-
 function social({
   label,
   message,
@@ -465,7 +438,6 @@ function social({
   logoPadding,
   color = '#4c1',
   labelColor = '#555',
-  minify,
 }) {
   // Social label is styled with a leading capital. Convert to caps here so
   // width can be measured using the correct characters.
@@ -473,24 +445,23 @@ function social({
 
   const externalHeight = 20
   const internalHeight = 19
-  const horizPadding = 5
+  const labelHorizPadding = 5
+  const messageHorizPadding = 4
+  const horizGutter = 6
   const { totalLogoWidth, renderedLogo } = renderLogo({
     logo,
     badgeHeight: externalHeight,
-    horizPadding,
+    horizPadding: labelHorizPadding,
     logoWidth,
     logoPadding,
   })
   const hasMessage = message.length
 
-  let { labelWidth, messageWidth } = computeWidths({ label, message })
-  labelWidth += 10 + totalLogoWidth
-  messageWidth += 10
-  messageWidth -= 4
-
-  const labelTextX = ((labelWidth + totalLogoWidth) / 2) * 10
-  const labelTextLength = (labelWidth - (10 + totalLogoWidth)) * 10
-  const escapedLabel = escapeXml(label)
+  const font = 'bold 11px Helvetica'
+  const labelTextWidth = preferredWidthOf(label, { font })
+  const messageTextWidth = preferredWidthOf(message, { font })
+  const labelRectWidth = labelTextWidth + totalLogoWidth + 2 * labelHorizPadding
+  const messageRectWidth = messageTextWidth + 2 * messageHorizPadding
 
   let [leftLink, rightLink] = links
   leftLink = escapeXml(leftLink)
@@ -500,29 +471,35 @@ function social({
   const accessibleText = createAccessibleText({ label, message })
 
   function renderMessageBubble() {
-    const messageBubbleMainX = labelWidth + 6.5
-    const messageBubbleNotchX = labelWidth + 6
+    const messageBubbleMainX = labelRectWidth + horizGutter + 0.5
+    const messageBubbleNotchX = labelRectWidth + horizGutter
     return `
-      <rect x="${messageBubbleMainX}" y="0.5" width="${messageWidth}" height="${internalHeight}" rx="2" fill="#fafafa"/>
+      <rect x="${messageBubbleMainX}" y="0.5" width="${messageRectWidth}" height="${internalHeight}" rx="2" fill="#fafafa"/>
       <rect x="${messageBubbleNotchX}" y="7.5" width="0.5" height="5" stroke="#fafafa"/>
       <path d="M${messageBubbleMainX} 6.5 l-3 3v1 l3 3" stroke="d5d5d5" fill="#fafafa"/>
     `
   }
 
   function renderLabelText() {
-    const rect = `<rect id="llink" stroke="#d5d5d5" fill="url(#a)" x=".5" y=".5" width="${labelWidth}" height="${internalHeight}" rx="2" />`
+    const labelTextX =
+      10 * (totalLogoWidth + labelTextWidth / 2 + labelHorizPadding)
+    const labelTextLength = 10 * labelTextWidth
+    const escapedLabel = escapeXml(label)
+    const shouldWrapWithLink = hasLeftLink && !shouldWrapBodyWithLink({ links })
+
+    const rect = `<rect id="llink" stroke="#d5d5d5" fill="url(#a)" x=".5" y=".5" width="${labelRectWidth}" height="${internalHeight}" rx="2" />`
     const shadow = `<text aria-hidden="true" x="${labelTextX}" y="150" fill="#fff" transform="scale(.1)" textLength="${labelTextLength}">${escapedLabel}</text>`
     const text = `<text x="${labelTextX}" y="140" transform="scale(.1)" textLength="${labelTextLength}">${escapedLabel}</text>`
-    if (hasLeftLink && !shouldWrapBodyWithLink({ links })) {
-      return `
+
+    return shouldWrapWithLink
+      ? `
         <a target="_blank" xlink:href="${leftLink}">
           ${shadow}
           ${text}
           ${rect}
         </a>
       `
-    }
-    return `
+      : `
       ${rect}
       ${shadow}
       ${text}
@@ -530,34 +507,36 @@ function social({
   }
 
   function renderMessageText() {
-    const messageTextX = (labelWidth + messageWidth / 2 + 6) * 10
-    const messageTextLength = (messageWidth - 8) * 10
+    const messageTextX =
+      10 * (labelRectWidth + horizGutter + messageRectWidth / 2)
+    const messageTextLength = 10 * messageTextWidth
     const escapedMessage = escapeXml(message)
-    const rect = `<rect width="${messageWidth + 1}" x="${
-      labelWidth + 6
+
+    const rect = `<rect width="${messageRectWidth + 1}" x="${
+      labelRectWidth + horizGutter
     }" height="${internalHeight + 1}" fill="rgba(0,0,0,0)" />`
     const shadow = `<text aria-hidden="true" x="${messageTextX}" y="150" fill="#fff" transform="scale(.1)" textLength="${messageTextLength}">${escapedMessage}</text>`
     const text = `<text id="rlink" x="${messageTextX}" y="140" transform="scale(.1)" textLength="${messageTextLength}">${escapedMessage}</text>`
-    if (hasRightLink) {
-      return `
+
+    return hasRightLink
+      ? `
         <a target="_blank" xlink:href="${rightLink}">
           ${rect}
           ${shadow}
           ${text}
         </a>
       `
-    }
-    return `
+      : `
       ${shadow}
       ${text}
     `
   }
 
-  const badge = renderBadge(
+  return renderBadge(
     {
       links,
-      leftWidth: labelWidth + 1,
-      rightWidth: hasMessage ? messageWidth + 6 : 0,
+      leftWidth: labelRectWidth + 1,
+      rightWidth: hasMessage ? horizGutter + messageRectWidth : 0,
       accessibleText,
       height: externalHeight,
     },
@@ -572,7 +551,7 @@ function social({
       <stop offset="1" stop-opacity=".1"/>
     </linearGradient>
     <g stroke="#d5d5d5">
-      <rect stroke="none" fill="#fcfcfc" x="0.5" y="0.5" width="${labelWidth}" height="${internalHeight}" rx="2"/>
+      <rect stroke="none" fill="#fcfcfc" x="0.5" y="0.5" width="${labelRectWidth}" height="${internalHeight}" rx="2"/>
       ${hasMessage ? renderMessageBubble() : ''}
     </g>
     ${renderedLogo}
@@ -582,11 +561,6 @@ function social({
     </g>
     `
   )
-
-  if (minify) {
-    return stripXmlWhitespace(badge)
-  }
-  return badge
 }
 
 function forTheBadge({
@@ -595,120 +569,239 @@ function forTheBadge({
   links,
   logo,
   logoWidth,
-  logoPadding,
   color = '#4c1',
   labelColor,
-  minify,
 }) {
-  // For the Badge is styled in all caps. Convert to caps here so widths can
-  // be measured using the correct characters.
+  const FONT_SIZE = 10
+  const BADGE_HEIGHT = 28
+  const LOGO_HEIGHT = 14
+  const TEXT_MARGIN = 12
+  const LOGO_MARGIN = 9
+  const LOGO_TEXT_GUTTER = 6
+  const LETTER_SPACING = 1.25
+
+  // Prepare content. For the Badge is styled in all caps. It's important to to
+  // convert to uppercase first so the widths can be measured using the correct
+  // symbols.
   label = label.toUpperCase()
   message = message.toUpperCase()
 
-  let { labelWidth, messageWidth } = computeWidths({ label, message })
-  const height = 28
-  const hasLabel = label.length || labelColor
-  if (labelColor == null) {
-    labelColor = '#555'
-  }
-  const horizPadding = 9
-  const { hasLogo, totalLogoWidth, renderedLogo } = renderLogo({
-    logo,
-    badgeHeight: height,
-    horizPadding,
-    logoWidth,
-    logoPadding,
-  })
-
-  labelWidth += 10 + totalLogoWidth
-  if (label.length) {
-    labelWidth += 10 + label.length * 1.5
-  } else if (hasLogo) {
-    if (hasLabel) {
-      labelWidth += 7
-    } else {
-      labelWidth -= 7
-    }
-  } else {
-    labelWidth -= 11
-  }
-
-  messageWidth += 10
-  messageWidth += 10 + message.length * 2
-  const leftWidth = hasLogo && !hasLabel ? 0 : labelWidth
-  const rightWidth =
-    hasLogo && !hasLabel ? messageWidth + labelWidth : messageWidth
-
-  labelColor = hasLabel || hasLogo ? labelColor : color
-
-  color = escapeXml(color)
-  labelColor = escapeXml(labelColor)
-
-  let [leftLink, rightLink] = links
-  leftLink = escapeXml(leftLink)
-  rightLink = escapeXml(rightLink)
+  const [leftLink, rightLink] = links
   const { hasLeftLink, hasRightLink } = hasLinks({ links })
 
-  const accessibleText = createAccessibleText({ label, message })
+  const outLabelColor = labelColor || '#555'
 
-  function renderLabelText() {
-    const labelTextX = ((labelWidth + totalLogoWidth) / 2) * 10
-    const labelTextLength = (labelWidth - (24 + totalLogoWidth)) * 10
-    const escapedLabel = escapeXml(label)
-    const text = `<text fill="#fff" x="${labelTextX}" y="175" transform="scale(.1)" textLength="${labelTextLength}">${escapedLabel}</text>`
+  // Compute text width.
+  // TODO: This really should count the symbols rather than just using `.length`.
+  // https://mathiasbynens.be/notes/javascript-unicode
+  // This is not using `preferredWidthOf()` as it tends to produce larger
+  // inconsistencies in the letter spacing. The badges look fine, however if you
+  // replace `textLength` with `letterSpacing` in the rendered SVG, you can see
+  // the discrepancy. Ideally, swapping out `textLength` for `letterSpacing`
+  // should not affect the appearance.
+  const labelTextWidth = label.length
+    ? (anafanafo(label, { font: `${FONT_SIZE}px Verdana` }) | 0) +
+      LETTER_SPACING * label.length
+    : 0
+  const messageTextWidth = message.length
+    ? (anafanafo(message, { font: `bold ${FONT_SIZE}px Verdana` }) | 0) +
+      LETTER_SPACING * message.length
+    : 0
+
+  // Compute horizontal layout.
+  // If a `labelColor` is set, the logo is always set against it, even when
+  // there is no label. When `needsLabelRect` is true, render a label rect and a
+  // message rect; when false, only a message rect.
+  const hasLabel = Boolean(label.length)
+  const needsLabelRect = hasLabel || (logo && labelColor)
+  let logoMinX, labelTextMinX
+  if (logo) {
+    logoMinX = LOGO_MARGIN
+    labelTextMinX = logoMinX + logoWidth + LOGO_TEXT_GUTTER
+  } else {
+    labelTextMinX = TEXT_MARGIN
+  }
+  let labelRectWidth, messageTextMinX, messageRectWidth
+  if (needsLabelRect) {
+    if (hasLabel) {
+      labelRectWidth = labelTextMinX + labelTextWidth + TEXT_MARGIN
+    } else {
+      labelRectWidth = 2 * LOGO_MARGIN + logoWidth
+    }
+    messageTextMinX = labelRectWidth + TEXT_MARGIN
+    messageRectWidth = 2 * TEXT_MARGIN + messageTextWidth
+  } else {
+    if (logo) {
+      messageTextMinX = TEXT_MARGIN + logoWidth + LOGO_TEXT_GUTTER
+      messageRectWidth =
+        2 * TEXT_MARGIN + logoWidth + LOGO_TEXT_GUTTER + messageTextWidth
+    } else {
+      messageTextMinX = TEXT_MARGIN
+      messageRectWidth = 2 * TEXT_MARGIN + messageTextWidth
+    }
+  }
+
+  const logoElement = new XmlElement({
+    name: 'image',
+    attrs: {
+      x: logoMinX,
+      y: 0.5 * (BADGE_HEIGHT - LOGO_HEIGHT),
+      width: logoWidth,
+      height: LOGO_HEIGHT,
+      'xlink:href': logo,
+    },
+  })
+
+  function getLabelElement() {
+    const { textColor } = colorsForBackground(outLabelColor)
+    const midX = labelTextMinX + 0.5 * labelTextWidth
+    const text = new XmlElement({
+      name: 'text',
+      content: [label],
+      attrs: {
+        transform: FONT_SCALE_DOWN_VALUE,
+        x: FONT_SCALE_UP_FACTOR * midX,
+        y: 175,
+        textLength: FONT_SCALE_UP_FACTOR * labelTextWidth,
+        fill: textColor,
+      },
+    })
+
     if (hasLeftLink && !shouldWrapBodyWithLink({ links })) {
-      return `
-        <a target="_blank" xlink:href="${leftLink}">
-          <rect width="${leftWidth}" height="${height}" fill="rgba(0,0,0,0)"/>
-          ${text}
-        </a>
-      `
+      const rect = new XmlElement({
+        name: 'rect',
+        attrs: {
+          width: labelRectWidth,
+          height: BADGE_HEIGHT,
+          fill: 'rgba(0,0,0,0)',
+        },
+      })
+      return new XmlElement({
+        name: 'a',
+        content: [rect, text],
+        attrs: {
+          target: '_blank',
+          'xlink:href': leftLink,
+        },
+      })
+    } else {
+      return text
     }
-    return text
   }
 
-  function renderMessageText() {
-    const text = `<text fill="#fff" x="${
-      (labelWidth + messageWidth / 2) * 10
-    }" y="175" font-weight="bold" transform="scale(.1)" textLength="${
-      (messageWidth - 24) * 10
-    }">
-      ${escapeXml(message)}</text>`
+  function getMessageElement() {
+    const { textColor } = colorsForBackground(color)
+    const midX = messageTextMinX + 0.5 * messageTextWidth
+    const text = new XmlElement({
+      name: 'text',
+      content: [message],
+      attrs: {
+        transform: FONT_SCALE_DOWN_VALUE,
+        x: FONT_SCALE_UP_FACTOR * midX,
+        y: 175,
+        textLength: FONT_SCALE_UP_FACTOR * messageTextWidth,
+        fill: textColor,
+        'font-weight': 'bold',
+      },
+    })
+
     if (hasRightLink) {
-      return `
-        <a target="_blank" xlink:href="${rightLink}">
-          <rect width="${rightWidth}" height="${height}" x="${labelWidth}" fill="rgba(0,0,0,0)"/>
-          ${text}
-        </a>
-      `
+      const rect = new XmlElement({
+        name: 'rect',
+        attrs: {
+          width: messageRectWidth,
+          height: BADGE_HEIGHT,
+          x: labelRectWidth || 0,
+          fill: 'rgba(0,0,0,0)',
+        },
+      })
+      return new XmlElement({
+        name: 'a',
+        content: [rect, text],
+        attrs: {
+          target: '_blank',
+          'xlink:href': rightLink,
+        },
+      })
+    } else {
+      return text
     }
-    return text
   }
 
-  const badge = renderBadge(
+  let backgroundContent
+  if (needsLabelRect) {
+    backgroundContent = [
+      new XmlElement({
+        name: 'rect',
+        attrs: {
+          width: labelRectWidth,
+          height: BADGE_HEIGHT,
+          fill: outLabelColor,
+        },
+      }),
+      new XmlElement({
+        name: 'rect',
+        attrs: {
+          x: labelRectWidth,
+          width: messageRectWidth,
+          height: BADGE_HEIGHT,
+          fill: color,
+        },
+      }),
+    ]
+  } else {
+    backgroundContent = [
+      new XmlElement({
+        name: 'rect',
+        attrs: {
+          width: messageRectWidth,
+          height: BADGE_HEIGHT,
+          fill: color,
+        },
+      }),
+    ]
+  }
+
+  const backgroundGroup = new XmlElement({
+    name: 'g',
+    content: backgroundContent,
+    attrs: {
+      'shape-rendering': 'crispEdges',
+    },
+  })
+  const foregroundGroup = new XmlElement({
+    name: 'g',
+    content: [
+      logo ? logoElement : '',
+      hasLabel ? getLabelElement() : '',
+      getMessageElement(),
+    ],
+    attrs: {
+      fill: '#fff',
+      'text-anchor': 'middle',
+      'font-family': FONT_FAMILY,
+      'text-rendering': 'geometricPrecision',
+      'font-size': FONT_SCALE_UP_FACTOR * FONT_SIZE,
+    },
+  })
+
+  // Render.
+  return renderBadge(
     {
       links,
-      leftWidth,
-      rightWidth,
-      accessibleText,
-      height,
+      leftWidth: labelRectWidth || 0,
+      rightWidth: messageRectWidth,
+      accessibleText: createAccessibleText({ label, message }),
+      height: BADGE_HEIGHT,
     },
-    `
-    <g shape-rendering="crispEdges">
-      <rect width="${leftWidth}" height="${height}" fill="${labelColor}"/>
-      <rect x="${leftWidth}" width="${rightWidth}" height="${height}" fill="${color}"/>
-    </g>
-    <g fill="#fff" text-anchor="middle" ${fontFamily} text-rendering="geometricPrecision" font-size="100">
-      ${renderedLogo}
-      ${hasLabel ? renderLabelText() : ''}
-      ${renderMessageText()}
-    </g>`
+    [backgroundGroup.render(), foregroundGroup.render()].join('')
   )
-
-  if (minify) {
-    return stripXmlWhitespace(badge)
-  }
-  return badge
 }
 
-module.exports = { plastic, flat, flatSquare, social, forTheBadge }
+module.exports = {
+  plastic: params => Plastic.render(params),
+  flat: params => Flat.render(params),
+  'flat-square': params => FlatSquare.render(params),
+  social,
+  'for-the-badge': forTheBadge,
+}

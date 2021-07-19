@@ -1,32 +1,22 @@
-'use strict'
+import PypiBase from './pypi-base.js'
+import { parseClassifiers } from './pypi-helpers.js'
 
-const PypiBase = require('./pypi-base')
-const { parseClassifiers } = require('./pypi-helpers')
+export default class PypiImplementation extends PypiBase {
+  static category = 'platform-support'
 
-module.exports = class PypiImplementation extends PypiBase {
-  static get category() {
-    return 'platform-support'
-  }
+  static route = this.buildRoute('pypi/implementation')
 
-  static get route() {
-    return this.buildRoute('pypi/implementation')
-  }
+  static examples = [
+    {
+      title: 'PyPI - Implementation',
+      pattern: ':packageName',
+      namedParams: { packageName: 'Django' },
+      staticPreview: this.render({ implementations: ['cpython'] }),
+      keywords: ['python'],
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'PyPI - Implementation',
-        pattern: ':packageName',
-        namedParams: { packageName: 'Django' },
-        staticPreview: this.render({ implementations: ['cpython'] }),
-        keywords: ['python'],
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'implementation' }
-  }
+  static defaultBadgeData = { label: 'implementation' }
 
   static render({ implementations }) {
     return {

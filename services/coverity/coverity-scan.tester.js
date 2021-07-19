@@ -1,7 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const t = (module.exports = require('../tester').createServiceTester())
+import Joi from 'joi'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('known project id')
   .get('/3997.json')
@@ -12,8 +11,7 @@ t.create('known project id')
 
 t.create('unknown project id')
   .get('/abc.json')
-  // Coverity actually returns an HTTP 200 status with an HTML page when the project is not found.
-  .expectBadge({ label: 'coverity', message: 'unparseable json response' })
+  .expectBadge({ label: 'coverity', message: 'project not found' })
 
 t.create('404 response')
   .get('/1.json')

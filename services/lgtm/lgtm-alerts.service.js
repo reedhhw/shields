@@ -1,28 +1,26 @@
-'use strict'
+import { metric } from '../text-formatters.js'
+import LgtmBaseService from './lgtm-base.js'
 
-const { metric } = require('../text-formatters')
-const LgtmBaseService = require('./lgtm-base')
-
-module.exports = class LgtmAlerts extends LgtmBaseService {
-  static get route() {
-    return {
-      base: 'lgtm/alerts',
-      pattern: this.pattern,
-    }
+export default class LgtmAlerts extends LgtmBaseService {
+  static route = {
+    base: 'lgtm/alerts',
+    pattern: this.pattern,
   }
 
-  static get examples() {
-    return [
-      {
-        title: 'LGTM Alerts',
-        namedParams: {
-          host: 'github',
-          user: 'apache',
-          repo: 'cloudstack',
-        },
-        staticPreview: this.render({ alerts: 2488 }),
+  static examples = [
+    {
+      title: 'LGTM Alerts',
+      namedParams: {
+        host: 'github',
+        user: 'apache',
+        repo: 'cloudstack',
       },
-    ]
+      staticPreview: this.render({ alerts: 2488 }),
+    },
+  ]
+
+  static defaultBadgeData = {
+    label: 'lgtm alerts',
   }
 
   static getColor({ alerts }) {
@@ -35,7 +33,7 @@ module.exports = class LgtmAlerts extends LgtmBaseService {
 
   static render({ alerts }) {
     return {
-      message: metric(alerts) + (alerts === 1 ? ' alert' : ' alerts'),
+      message: metric(alerts),
       color: this.getColor({ alerts }),
     }
   }

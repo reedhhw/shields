@@ -1,11 +1,11 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { withRegex } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import Joi from 'joi'
+import { withRegex } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 const buildStatusValues = Joi.equal('passing', 'failure', 'error').required()
-const buildStatusTextRegex = /^success|failure|error|tests( failed: \d+( \(\d+ new\))?)?(,)?( passed: \d+)?(,)?( ignored: \d+)?(,)?( muted: \d+)?/
+const buildStatusTextRegex =
+  /^success|failure|error|tests( failed: \d+( \(\d+ new\))?)?(,)?( passed: \d+)?(,)?( ignored: \d+)?(,)?( muted: \d+)?/
 
 t.create('unknown build')
   .get('/s/btabc.json?server=https://teamcity.jetbrains.com')

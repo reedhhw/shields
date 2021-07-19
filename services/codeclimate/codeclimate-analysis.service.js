@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { colorScale, letterScore } = require('../color-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService, NotFound } = require('..')
-const { keywords, isLetterGrade, fetchRepo } = require('./codeclimate-common')
+import Joi from 'joi'
+import { colorScale, letterScore } from '../color-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService, NotFound } from '../index.js'
+import { keywords, isLetterGrade, fetchRepo } from './codeclimate-common.js'
 
 const schema = Joi.object({
   data: Joi.object({
@@ -87,58 +85,51 @@ const variantMap = {
   },
 }
 
-module.exports = class CodeclimateAnalysis extends BaseJsonService {
-  static get category() {
-    return 'analysis'
+export default class CodeclimateAnalysis extends BaseJsonService {
+  static category = 'analysis'
+  static route = {
+    base: 'codeclimate',
+    pattern:
+      ':variant(maintainability|maintainability-percentage|tech-debt|issues)/:user/:repo',
   }
 
-  static get route() {
-    return {
-      base: 'codeclimate',
+  static examples = [
+    {
+      title: 'Code Climate maintainability',
       pattern:
-        ':variant(maintainability|maintainability-percentage|tech-debt|issues)/:user/:repo',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Code Climate maintainability',
-        pattern:
-          ':format(maintainability|maintainability-percentage)/:user/:repo',
-        namedParams: {
-          format: 'maintainability',
-          user: 'angular',
-          repo: 'angular',
-        },
-        staticPreview: this.render({
-          variant: 'maintainability',
-          maintainabilityLetter: 'F',
-        }),
-        keywords,
+        ':format(maintainability|maintainability-percentage)/:user/:repo',
+      namedParams: {
+        format: 'maintainability',
+        user: 'angular',
+        repo: 'angular',
       },
-      {
-        title: 'Code Climate issues',
-        pattern: 'issues/:user/:repo',
-        namedParams: { user: 'twbs', repo: 'bootstrap' },
-        staticPreview: this.render({
-          variant: 'issues',
-          issueCount: '89',
-        }),
-        keywords,
-      },
-      {
-        title: 'Code Climate technical debt',
-        pattern: 'tech-debt/:user/:repo',
-        namedParams: { user: 'angular', repo: 'angular' },
-        staticPreview: this.render({
-          variant: 'tech-debt',
-          techDebtPercentage: 3.0,
-        }),
-        keywords,
-      },
-    ]
-  }
+      staticPreview: this.render({
+        variant: 'maintainability',
+        maintainabilityLetter: 'F',
+      }),
+      keywords,
+    },
+    {
+      title: 'Code Climate issues',
+      pattern: 'issues/:user/:repo',
+      namedParams: { user: 'twbs', repo: 'bootstrap' },
+      staticPreview: this.render({
+        variant: 'issues',
+        issueCount: '89',
+      }),
+      keywords,
+    },
+    {
+      title: 'Code Climate technical debt',
+      pattern: 'tech-debt/:user/:repo',
+      namedParams: { user: 'angular', repo: 'angular' },
+      staticPreview: this.render({
+        variant: 'tech-debt',
+        techDebtPercentage: 3.0,
+      }),
+      keywords,
+    },
+  ]
 
   static render({ variant, ...props }) {
     const { render } = variantMap[variant]

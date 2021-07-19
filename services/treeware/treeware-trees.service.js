@@ -1,39 +1,31 @@
-'use strict'
-
-const crypto = require('crypto')
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { floorCount } = require('../color-formatters')
-const { BaseJsonService } = require('..')
+import crypto from 'crypto'
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { floorCount } from '../color-formatters.js'
+import { BaseJsonService } from '../index.js'
 
 const apiSchema = Joi.object({
   total: Joi.number().required(),
 }).required()
 
-module.exports = class TreewareTrees extends BaseJsonService {
-  static get category() {
-    return 'other'
+export default class TreewareTrees extends BaseJsonService {
+  static category = 'other'
+
+  static route = {
+    base: 'treeware/trees',
+    pattern: ':owner/:packageName',
   }
 
-  static get route() {
-    return {
-      base: 'treeware/trees',
-      pattern: ':owner/:packageName',
-    }
-  }
+  static examples = [
+    {
+      title: 'Treeware (Trees)',
+      namedParams: { owner: 'stoplightio', packageName: 'spectral' },
+      staticPreview: this.render({ count: 250 }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Treeware (Trees)',
-        namedParams: { owner: 'stoplightio', packageName: 'spectral' },
-        staticPreview: this.render({ count: 250 }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'trees' }
+  static defaultBadgeData = {
+    label: 'trees',
   }
 
   static render({ count }) {

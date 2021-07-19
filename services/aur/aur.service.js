@@ -1,13 +1,11 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { floorCount: floorCountColor } = require('../color-formatters')
-const { addv, metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService, NotFound } = require('..')
-const { formatDate } = require('../text-formatters')
-const { age: ageColor } = require('../color-formatters')
-const { InvalidResponse } = require('..')
+import Joi from 'joi'
+import {
+  floorCount as floorCountColor,
+  age as ageColor,
+} from '../color-formatters.js'
+import { addv, metric, formatDate } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService, NotFound, InvalidResponse } from '../index.js'
 
 const aurSchema = Joi.object({
   resultcount: nonNegativeInteger,
@@ -25,9 +23,7 @@ const aurSchema = Joi.object({
 }).required()
 
 class BaseAurService extends BaseJsonService {
-  static get defaultBadgeData() {
-    return { label: 'aur' }
-  }
+  static defaultBadgeData = { label: 'aur' }
 
   static _validate(data, schema) {
     if (data.resultcount === 0) {
@@ -51,30 +47,18 @@ class BaseAurService extends BaseJsonService {
 }
 
 class AurLicense extends BaseAurService {
-  static get category() {
-    return 'license'
-  }
+  static category = 'license'
+  static route = { base: 'aur/license', pattern: ':packageName' }
 
-  static get route() {
-    return {
-      base: 'aur/license',
-      pattern: ':packageName',
-    }
-  }
+  static examples = [
+    {
+      title: 'AUR license',
+      namedParams: { packageName: 'android-studio' },
+      staticPreview: this.render({ license: 'Apache' }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'AUR license',
-        namedParams: { packageName: 'android-studio' },
-        staticPreview: this.render({ license: 'Apache' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'license' }
-  }
+  static defaultBadgeData = { label: 'license' }
 
   static render({ license }) {
     return { message: license, color: 'blue' }
@@ -97,30 +81,19 @@ class AurLicense extends BaseAurService {
 }
 
 class AurVotes extends BaseAurService {
-  static get category() {
-    return 'rating'
-  }
+  static category = 'rating'
 
-  static get route() {
-    return {
-      base: 'aur/votes',
-      pattern: ':packageName',
-    }
-  }
+  static route = { base: 'aur/votes', pattern: ':packageName' }
 
-  static get examples() {
-    return [
-      {
-        title: 'AUR votes',
-        namedParams: { packageName: 'dropbox' },
-        staticPreview: this.render({ votes: '2280' }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'AUR votes',
+      namedParams: { packageName: 'dropbox' },
+      staticPreview: this.render({ votes: '2280' }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'votes' }
-  }
+  static defaultBadgeData = { label: 'votes' }
 
   static render({ votes }) {
     return {
@@ -136,26 +109,17 @@ class AurVotes extends BaseAurService {
 }
 
 class AurVersion extends BaseAurService {
-  static get category() {
-    return 'version'
-  }
+  static category = 'version'
 
-  static get route() {
-    return {
-      base: 'aur/version',
-      pattern: ':packageName',
-    }
-  }
+  static route = { base: 'aur/version', pattern: ':packageName' }
 
-  static get examples() {
-    return [
-      {
-        title: 'AUR version',
-        namedParams: { packageName: 'visual-studio-code-bin' },
-        staticPreview: this.render({ version: '1.34.0-2', outOfDate: null }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'AUR version',
+      namedParams: { packageName: 'visual-studio-code-bin' },
+      staticPreview: this.render({ version: '1.34.0-2', outOfDate: null }),
+    },
+  ]
 
   static render({ version, outOfDate }) {
     const color = outOfDate === null ? 'blue' : 'orange'
@@ -172,30 +136,19 @@ class AurVersion extends BaseAurService {
 }
 
 class AurMaintainer extends BaseAurService {
-  static get category() {
-    return 'other'
-  }
+  static category = 'other'
 
-  static get route() {
-    return {
-      base: 'aur/maintainer',
-      pattern: ':packageName',
-    }
-  }
+  static route = { base: 'aur/maintainer', pattern: ':packageName' }
 
-  static get examples() {
-    return [
-      {
-        title: 'AUR maintainer',
-        namedParams: { packageName: 'google-chrome' },
-        staticPreview: this.render({ maintainer: 'luzifer' }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'AUR maintainer',
+      namedParams: { packageName: 'google-chrome' },
+      staticPreview: this.render({ maintainer: 'luzifer' }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'maintainer', color: 'blue' }
-  }
+  static defaultBadgeData = { label: 'maintainer', color: 'blue' }
 
   static render({ maintainer }) {
     return { message: maintainer }
@@ -213,30 +166,22 @@ class AurMaintainer extends BaseAurService {
 }
 
 class AurLastModified extends BaseAurService {
-  static get category() {
-    return 'activity'
+  static category = 'activity'
+
+  static route = {
+    base: 'aur/last-modified',
+    pattern: ':packageName',
   }
 
-  static get route() {
-    return {
-      base: 'aur/last-modified',
-      pattern: ':packageName',
-    }
-  }
+  static examples = [
+    {
+      title: 'AUR last modified',
+      namedParams: { packageName: 'google-chrome' },
+      staticPreview: this.render({ date: new Date().getTime() }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'AUR last modified',
-        namedParams: { packageName: 'google-chrome' },
-        staticPreview: this.render({ date: new Date().getTime() }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'last modified' }
-  }
+  static defaultBadgeData = { label: 'last modified' }
 
   static render({ date }) {
     const color = ageColor(date)
@@ -251,10 +196,4 @@ class AurLastModified extends BaseAurService {
   }
 }
 
-module.exports = {
-  AurLicense,
-  AurVersion,
-  AurVotes,
-  AurMaintainer,
-  AurLastModified,
-}
+export { AurLicense, AurVersion, AurVotes, AurMaintainer, AurLastModified }

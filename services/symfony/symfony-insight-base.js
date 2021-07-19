@@ -1,7 +1,5 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { BaseXmlService, NotFound } = require('..')
+import Joi from 'joi'
+import { BaseXmlService, NotFound } from '../index.js'
 
 const violationSchema = Joi.object({
   severity: Joi.equal('info', 'minor', 'major', 'critical').required(),
@@ -43,23 +41,17 @@ const gradeColors = {
 }
 
 class SymfonyInsightBase extends BaseXmlService {
-  static get category() {
-    return 'analysis'
+  static category = 'analysis'
+
+  static auth = {
+    userKey: 'sl_insight_userUuid',
+    passKey: 'sl_insight_apiToken',
+    authorizedOrigins: ['https://insight.symfony.com'],
+    isRequired: true,
   }
 
-  static get auth() {
-    return {
-      userKey: 'sl_insight_userUuid',
-      passKey: 'sl_insight_apiToken',
-      authorizedOrigins: ['https://insight.symfony.com'],
-      isRequired: true,
-    }
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'symfony insight',
-    }
+  static defaultBadgeData = {
+    label: 'symfony insight',
   }
 
   async fetch({ projectUuid }) {
@@ -132,8 +124,4 @@ class SymfonyInsightBase extends BaseXmlService {
   }
 }
 
-module.exports = {
-  SymfonyInsightBase,
-  keywords,
-  gradeColors,
-}
+export { SymfonyInsightBase, keywords, gradeColors }

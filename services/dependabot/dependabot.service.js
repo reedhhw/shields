@@ -1,42 +1,30 @@
-'use strict'
-
-const url = require('url')
-const Joi = require('@hapi/joi')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   status: Joi.string().required(),
   colour: Joi.string().required(),
 })
 
-module.exports = class DependabotSemverCompatibility extends BaseJsonService {
-  static get category() {
-    return 'analysis'
+export default class DependabotSemverCompatibility extends BaseJsonService {
+  static category = 'analysis'
+  static route = {
+    base: 'dependabot/semver',
+    pattern: ':packageManager/:dependencyName',
   }
 
-  static get route() {
-    return {
-      base: 'dependabot/semver',
-      pattern: ':packageManager/:dependencyName',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Dependabot SemVer Compatibility',
-        namedParams: { packageManager: 'bundler', dependencyName: 'puma' },
-        staticPreview: {
-          color: 'green',
-          message: '98%',
-        },
+  static examples = [
+    {
+      title: 'Dependabot SemVer Compatibility',
+      namedParams: { packageManager: 'bundler', dependencyName: 'puma' },
+      staticPreview: {
+        color: 'green',
+        message: '98%',
       },
-    ]
-  }
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'semver stability' }
-  }
+  static defaultBadgeData = { label: 'semver stability' }
 
   _getQuery({ packageManager, dependencyName }) {
     return {
@@ -55,19 +43,11 @@ module.exports = class DependabotSemverCompatibility extends BaseJsonService {
     })
   }
 
-  _getLink({ packageManager, dependencyName }) {
-    const qs = new url.URLSearchParams(
-      this._getQuery({ packageManager, dependencyName })
-    )
-    return `https://dependabot.com/compatibility-score.html?${qs.toString()}`
-  }
-
   async handle({ packageManager, dependencyName }) {
     const json = await this.fetch({ packageManager, dependencyName })
     return {
       color: json.colour,
       message: json.status,
-      link: this._getLink({ packageManager, dependencyName }),
     }
   }
 }

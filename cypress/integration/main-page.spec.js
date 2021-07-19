@@ -1,5 +1,3 @@
-'use strict'
-
 describe('Main page', function () {
   const backendUrl = Cypress.env('backend_url')
   const SEARCH_INPUT = 'input[placeholder="search / project URL"]'
@@ -61,5 +59,14 @@ describe('Main page', function () {
     cy.get('table input[name="color"]').type('orange')
 
     cy.get(`img[src='${backendUrl}/github/issues/badges/shields?color=orange']`)
+  })
+
+  it('Do not duplicate example parameters', function () {
+    cy.visit('/category/funding')
+
+    cy.contains('GitHub Sponsors').click()
+    cy.get('[name="style"]').should($style => {
+      expect($style).to.have.length(1)
+    })
   })
 })

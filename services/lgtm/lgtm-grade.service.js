@@ -1,39 +1,33 @@
-'use strict'
+import LgtmBaseService from './lgtm-base.js'
 
-const LgtmBaseService = require('./lgtm-base')
-
-module.exports = class LgtmGrade extends LgtmBaseService {
-  static get route() {
-    return {
-      base: 'lgtm/grade',
-      pattern: `:language/${this.pattern}`,
-    }
+export default class LgtmGrade extends LgtmBaseService {
+  static route = {
+    base: 'lgtm/grade',
+    pattern: `:language/${this.pattern}`,
   }
 
-  static get examples() {
-    return [
-      {
-        title: 'LGTM Grade',
-        namedParams: {
-          language: 'java',
-          host: 'github',
-          user: 'apache',
-          repo: 'cloudstack',
-        },
-        staticPreview: this.render({
-          language: 'java',
-          data: {
-            languages: [
-              {
-                lang: 'java',
-                grade: 'C',
-              },
-            ],
-          },
-        }),
+  static examples = [
+    {
+      title: 'LGTM Grade',
+      namedParams: {
+        language: 'java',
+        host: 'github',
+        user: 'apache',
+        repo: 'cloudstack',
       },
-    ]
-  }
+      staticPreview: this.render({
+        language: 'java',
+        data: {
+          languages: [
+            {
+              lang: 'java',
+              grade: 'C',
+            },
+          ],
+        },
+      }),
+    },
+  ]
 
   static getLabel({ language }) {
     const languageLabel = (() => {

@@ -1,41 +1,31 @@
-'use strict'
+import { promisify } from 'util'
+import { regularUpdate } from '../../core/legacy/regular-update.js'
+import { renderVersionBadge } from '../version.js'
+import { BaseService, NotFound } from '../index.js'
 
-const { promisify } = require('util')
-const { regularUpdate } = require('../../core/legacy/regular-update')
-const { renderVersionBadge } = require('../version')
-const { BaseService, NotFound } = require('..')
+export default class JenkinsPluginVersion extends BaseService {
+  static category = 'version'
 
-module.exports = class JenkinsPluginVersion extends BaseService {
-  static get category() {
-    return 'version'
+  static route = {
+    base: 'jenkins/plugin/v',
+    pattern: ':plugin',
   }
 
-  static get route() {
-    return {
-      base: 'jenkins/plugin/v',
-      pattern: ':plugin',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Jenkins Plugins',
-        namedParams: {
-          plugin: 'blueocean',
-        },
-        staticPreview: {
-          label: 'plugin',
-          message: 'v1.10.1',
-          color: 'blue',
-        },
+  static examples = [
+    {
+      title: 'Jenkins Plugins',
+      namedParams: {
+        plugin: 'blueocean',
       },
-    ]
-  }
+      staticPreview: {
+        label: 'plugin',
+        message: 'v1.10.1',
+        color: 'blue',
+      },
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'plugin' }
-  }
+  static defaultBadgeData = { label: 'plugin' }
 
   static render({ version }) {
     return renderVersionBadge({ version })

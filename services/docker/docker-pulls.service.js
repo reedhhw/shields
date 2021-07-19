@@ -1,44 +1,32 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
-const {
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
+import {
   dockerBlue,
   buildDockerUrl,
   getDockerHubUser,
-} = require('./docker-helpers')
+} from './docker-helpers.js'
 
 const pullsSchema = Joi.object({
   pull_count: nonNegativeInteger,
 }).required()
 
-module.exports = class DockerPulls extends BaseJsonService {
-  static get category() {
-    return 'downloads'
-  }
-
-  static get route() {
-    return buildDockerUrl('pulls')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Docker Pulls',
-        namedParams: {
-          user: '_',
-          repo: 'ubuntu',
-        },
-        staticPreview: this.render({ count: 765400000 }),
+export default class DockerPulls extends BaseJsonService {
+  static category = 'downloads'
+  static route = buildDockerUrl('pulls')
+  static examples = [
+    {
+      title: 'Docker Pulls',
+      namedParams: {
+        user: '_',
+        repo: 'ubuntu',
       },
-    ]
-  }
+      staticPreview: this.render({ count: 765400000 }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'docker pulls' }
-  }
+  static defaultBadgeData = { label: 'docker pulls' }
 
   static render({ count }) {
     return {

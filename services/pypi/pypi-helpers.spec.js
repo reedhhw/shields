@@ -1,13 +1,11 @@
-'use strict'
-
-const { test, given, forCases } = require('sazerac')
-const {
+import { test, given, forCases } from 'sazerac'
+import {
   parseClassifiers,
   parseDjangoVersionString,
   sortDjangoVersions,
   getLicenses,
   getPackageFormats,
-} = require('./pypi-helpers')
+} from './pypi-helpers.js'
 
 const classifiersFixture = {
   info: {
@@ -127,13 +125,35 @@ describe('PyPI helpers', function () {
         license: '',
         classifiers: ['License :: Public Domain'],
       },
-    }).expect(['public domain'])
+    }).expect(['Public Domain'])
     given({
       info: {
         license: '',
         classifiers: ['License :: Netscape Public License (NPL)'],
       },
     }).expect(['NPL'])
+    given({
+      info: {
+        license: '',
+        classifiers: ['License :: OSI Approved :: Apache Software License'],
+      },
+    }).expect(['Apache-2.0'])
+    given({
+      info: {
+        license: '',
+        classifiers: [
+          'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
+        ],
+      },
+    }).expect(['CC0-1.0'])
+    given({
+      info: {
+        license: '',
+        classifiers: [
+          'License :: OSI Approved :: GNU Affero General Public License v3',
+        ],
+      },
+    }).expect(['AGPL-3.0'])
   })
 
   test(getPackageFormats, () => {
@@ -154,7 +174,7 @@ describe('PyPI helpers', function () {
     given({
       info: { version: '0.8.2' },
       releases: {
-        '0.8': [{ packagetype: 'sdist' }],
+        0.8: [{ packagetype: 'sdist' }],
         '0.8.1': [
           { packagetype: 'bdist_egg' },
           { packagetype: 'bdist_egg' },

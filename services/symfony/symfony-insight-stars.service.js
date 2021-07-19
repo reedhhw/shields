@@ -1,11 +1,9 @@
-'use strict'
-
-const { starRating } = require('../text-formatters')
-const {
+import { starRating } from '../text-formatters.js'
+import {
   SymfonyInsightBase,
   keywords,
   gradeColors,
-} = require('./symfony-insight-base')
+} from './symfony-insight-base.js'
 
 const gradeStars = {
   none: 0,
@@ -15,29 +13,25 @@ const gradeStars = {
   platinum: 4,
 }
 
-module.exports = class SymfonyInsightStars extends SymfonyInsightBase {
-  static get route() {
-    return {
-      base: 'symfony/i/stars',
-      pattern: ':projectUuid',
-    }
+export default class SymfonyInsightStars extends SymfonyInsightBase {
+  static route = {
+    base: 'symfony/i/stars',
+    pattern: ':projectUuid',
   }
 
-  static get examples() {
-    return [
-      {
-        title: 'SymfonyInsight Stars',
-        namedParams: {
-          projectUuid: '45afb680-d4e6-4e66-93ea-bcfa79eb8a87',
-        },
-        staticPreview: this.render({
-          grade: 'silver',
-          status: 'finished',
-        }),
-        keywords,
+  static examples = [
+    {
+      title: 'SymfonyInsight Stars',
+      namedParams: {
+        projectUuid: '825be328-29f8-44f7-a750-f82818ae9111',
       },
-    ]
-  }
+      staticPreview: this.render({
+        grade: 'silver',
+        status: 'finished',
+      }),
+      keywords,
+    },
+  ]
 
   static render({ status, grade }) {
     const label = 'stars'

@@ -1,37 +1,23 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const { metric } = require('../text-formatters')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import { metric } from '../text-formatters.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({ activity_total: nonNegativeInteger })
 
-module.exports = class Bountysource extends BaseJsonService {
-  static get category() {
-    return 'funding'
-  }
+export default class Bountysource extends BaseJsonService {
+  static category = 'funding'
+  static route = { base: 'bountysource/team', pattern: ':team/activity' }
 
-  static get route() {
-    return {
-      base: 'bountysource/team',
-      pattern: ':team/activity',
-    }
-  }
+  static examples = [
+    {
+      title: 'Bountysource',
+      namedParams: { team: 'mozilla-core' },
+      staticPreview: this.render({ total: 53000 }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Bountysource',
-        namedParams: { team: 'mozilla-core' },
-        staticPreview: this.render({ total: 53000 }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'bounties' }
-  }
+  static defaultBadgeData = { label: 'bounties' }
 
   static render({ total }) {
     return {

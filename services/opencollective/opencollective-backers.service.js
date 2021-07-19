@@ -1,27 +1,19 @@
-'use strict'
+import OpencollectiveBase from './opencollective-base.js'
 
-const OpencollectiveBase = require('./opencollective-base')
+export default class OpencollectiveBackers extends OpencollectiveBase {
+  static route = this.buildRoute('backers')
 
-module.exports = class OpencollectiveBackers extends OpencollectiveBase {
-  static get route() {
-    return this.buildRoute('backers')
-  }
+  static examples = [
+    {
+      title: 'Open Collective backers',
+      namedParams: { collective: 'shields' },
+      staticPreview: this.render(25),
+      keywords: ['opencollective'],
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Open Collective backers',
-        namedParams: { collective: 'shields' },
-        staticPreview: this.render(25),
-        keywords: ['opencollective'],
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'backers',
-    }
+  static defaultBadgeData = {
+    label: 'backers',
   }
 
   async handle({ collective }) {

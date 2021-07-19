@@ -1,15 +1,13 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const { latest, renderVersionBadge } = require('../version')
-const { BaseJsonService, NotFound, InvalidResponse } = require('..')
-const {
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import { latest, renderVersionBadge } from '../version.js'
+import { BaseJsonService, NotFound, InvalidResponse } from '../index.js'
+import {
   buildDockerUrl,
   getDockerHubUser,
   getMultiPageData,
   getDigestSemVerMatches,
-} = require('./docker-helpers')
+} from './docker-helpers.js'
 
 const buildSchema = Joi.object({
   count: nonNegativeInteger.required(),
@@ -28,48 +26,52 @@ const buildSchema = Joi.object({
 
 const queryParamSchema = Joi.object({
   sort: Joi.string().valid('date', 'semver').default('date'),
+  arch: Joi.string()
+    // Valid architecture values: https://golang.org/doc/install/source#environment (GOARCH)
+    .valid(
+      'amd64',
+      'arm',
+      'arm64',
+      's390x',
+      '386',
+      'ppc64',
+      'ppc64le',
+      'wasm',
+      'mips',
+      'mipsle',
+      'mips64',
+      'mips64le'
+    )
+    .default('amd64'),
 }).required()
 
-module.exports = class DockerVersion extends BaseJsonService {
-  static get category() {
-    return 'version'
-  }
+export default class DockerVersion extends BaseJsonService {
+  static category = 'version'
+  static route = { ...buildDockerUrl('v', true), queryParamSchema }
+  static examples = [
+    {
+      title: 'Docker Image Version (latest by date)',
+      pattern: ':user/:repo',
+      namedParams: { user: '_', repo: 'alpine' },
+      queryParams: { sort: 'date', arch: 'amd64' },
+      staticPreview: this.render({ version: '3.9.5' }),
+    },
+    {
+      title: 'Docker Image Version (latest semver)',
+      pattern: ':user/:repo',
+      namedParams: { user: '_', repo: 'alpine' },
+      queryParams: { sort: 'semver' },
+      staticPreview: this.render({ version: '3.11.3' }),
+    },
+    {
+      title: 'Docker Image Version (tag latest semver)',
+      pattern: ':user/:repo/:tag',
+      namedParams: { user: '_', repo: 'alpine', tag: '3.6' },
+      staticPreview: this.render({ version: '3.6.5' }),
+    },
+  ]
 
-  static get route() {
-    return { ...buildDockerUrl('v', true), queryParamSchema }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Docker Image Version (latest by date)',
-        pattern: ':user/:repo',
-        namedParams: { user: '_', repo: 'alpine' },
-        queryParams: { sort: 'date' },
-        staticPreview: this.render({ version: '3.9.5' }),
-      },
-      {
-        title: 'Docker Image Version (latest semver)',
-        pattern: ':user/:repo',
-        namedParams: { user: '_', repo: 'alpine' },
-        queryParams: { sort: 'semver' },
-        staticPreview: this.render({ version: '3.11.3' }),
-      },
-      {
-        title: 'Docker Image Version (tag latest semver)',
-        pattern: ':user/:repo/:tag',
-        namedParams: { user: '_', repo: 'alpine', tag: '3.6' },
-        staticPreview: this.render({ version: '3.6.5' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'version',
-      color: 'blue',
-    }
-  }
+  static defaultBadgeData = { label: 'version', color: 'blue' }
 
   static render({ version }) {
     return renderVersionBadge({ version })
@@ -86,7 +88,7 @@ module.exports = class DockerVersion extends BaseJsonService {
     })
   }
 
-  transform({ tag, sort, data, pagedData }) {
+  transform({ tag, sort, data, pagedData, arch = 'amd64' }) {
     let version
 
     if (!tag && sort === 'date') {
@@ -94,9 +96,7 @@ module.exports = class DockerVersion extends BaseJsonService {
       if (version !== 'latest') {
         return { version }
       }
-      const imageTag = data.results[0].images.find(
-        i => i.architecture === 'amd64'
-      ) // Digest is the unique field that we utilise to match images
+      const imageTag = data.results[0].images.find(i => i.architecture === arch) // Digest is the unique field that we utilise to match images
       if (!imageTag) {
         throw new InvalidResponse({
           prettyMessage: 'digest not found for latest tag',
@@ -115,12 +115,18 @@ module.exports = class DockerVersion extends BaseJsonService {
       if (Object.keys(version.images).length === 0) {
         return { version: version.name }
       }
-      const { digest } = version.images.find(i => i.architecture === 'amd64')
+      const image = version.images.find(i => i.architecture === arch)
+      if (!image) {
+        throw new InvalidResponse({
+          prettyMessage: 'digest not found for given tag',
+        })
+      }
+      const { digest } = image
       return { version: getDigestSemVerMatches({ data, digest }) }
     }
   }
 
-  async handle({ user, repo, tag }, { sort }) {
+  async handle({ user, repo, tag }, { sort, arch }) {
     let data, pagedData
 
     if (!tag && sort === 'date') {
@@ -143,7 +149,13 @@ module.exports = class DockerVersion extends BaseJsonService {
       })
     }
 
-    const { version } = await this.transform({ tag, sort, data, pagedData })
+    const { version } = await this.transform({
+      tag,
+      sort,
+      data,
+      pagedData,
+      arch,
+    })
     return this.constructor.render({ version })
   }
 }

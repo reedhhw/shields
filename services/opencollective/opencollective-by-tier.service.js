@@ -1,31 +1,23 @@
-'use strict'
-
-const OpencollectiveBase = require('./opencollective-base')
+import OpencollectiveBase from './opencollective-base.js'
 
 const documentation = `<h3>How to get the tierId</h3>
 <p>According to <a target="_blank" href="https://developer.opencollective.com/#/api/collectives?id=get-members-per-tier">open collectives documentation</a>, you can find the tierId by looking at the URL after clicking on a Tier Card on the collective page. (e.g. tierId for https://opencollective.com/shields/order/2988 is 2988)</p>`
 
-module.exports = class OpencollectiveByTier extends OpencollectiveBase {
-  static get route() {
-    return this.buildRoute('tier', true)
-  }
+export default class OpencollectiveByTier extends OpencollectiveBase {
+  static route = this.buildRoute('tier', true)
 
-  static get examples() {
-    return [
-      {
-        title: 'Open Collective members by tier',
-        namedParams: { collective: 'shields', tierId: '2988' },
-        staticPreview: this.render(8, 'monthly backers'),
-        keywords: ['opencollective'],
-        documentation,
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Open Collective members by tier',
+      namedParams: { collective: 'shields', tierId: '2988' },
+      staticPreview: this.render(8, 'monthly backers'),
+      keywords: ['opencollective'],
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'open collective',
-    }
+  static defaultBadgeData = {
+    label: 'open collective',
   }
 
   async handle({ collective, tierId }) {

@@ -1,8 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { isBuildStatus } = require('../build-status')
-const t = (module.exports = require('../tester').createServiceTester())
+import Joi from 'joi'
+import { isBuildStatus } from '../build-status.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 const isWorkflowStatus = Joi.alternatives()
   .try(isBuildStatus, Joi.equal('no status'))
@@ -23,14 +22,21 @@ t.create('nonexistent workflow')
   })
 
 t.create('valid workflow')
-  .get('/actions/toolkit/Main%20workflow.json')
+  .get('/actions/toolkit/toolkit-unit-tests.json')
   .expectBadge({
     label: 'build',
     message: isWorkflowStatus,
   })
 
 t.create('valid workflow (branch)')
-  .get('/actions/toolkit/Main%20workflow/master.json')
+  .get('/actions/toolkit/toolkit-unit-tests/master.json')
+  .expectBadge({
+    label: 'build',
+    message: isWorkflowStatus,
+  })
+
+t.create('valid workflow (event)')
+  .get('/actions/toolkit/toolkit-unit-tests.json?event=push')
   .expectBadge({
     label: 'build',
     message: isWorkflowStatus,

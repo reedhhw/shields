@@ -1,7 +1,6 @@
-'use strict'
-
-const { isIntegerPercentage } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import { isIntegerPercentage } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('gets coverage status')
   .get('/github/codecov/example-python.json')
@@ -75,7 +74,7 @@ t.create('handles unauthorized error (with api token)')
   .intercept(nock =>
     nock('https://codecov.io/api', {
       reqheaders: {
-        authorization: 'token a1b2c3d4e5f6g7h8',
+        authorization: 'token a1b2c3d4e5f6g7h8', // lgtm [js/hardcoded-credentials]
       },
     })
       .get('/github/codecov/private-example-python')
@@ -93,7 +92,7 @@ t.create('handles unknown repository (with api token)')
   .intercept(nock =>
     nock('https://codecov.io/api', {
       reqheaders: {
-        authorization: 'token a1b2c3d4e5f6g7h8',
+        authorization: 'token a1b2c3d4e5f6g7h8', // lgtm [js/hardcoded-credentials]
       },
     })
       .get('/github/codecov2/fake-not-even-a-little-bit-real-python')
@@ -125,7 +124,7 @@ t.create('gets coverage for private repository (with api token)')
   .intercept(nock =>
     nock('https://codecov.io/api', {
       reqheaders: {
-        authorization: 'token a1b2c3d4e5f6g7h8',
+        authorization: 'token a1b2c3d4e5f6g7h8', // lgtm [js/hardcoded-credentials]
       },
     })
       .get('/github/codecov/private-example-python')

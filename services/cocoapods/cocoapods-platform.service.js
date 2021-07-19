@@ -1,34 +1,20 @@
-'use strict'
+import BaseCocoaPodsService from './cocoapods-base.js'
 
-const BaseCocoaPodsService = require('./cocoapods-base')
+export default class CocoapodsPlatform extends BaseCocoaPodsService {
+  static category = 'platform-support'
+  static route = { base: 'cocoapods/p', pattern: ':spec' }
 
-module.exports = class CocoapodsPlatform extends BaseCocoaPodsService {
-  static get category() {
-    return 'platform-support'
-  }
+  static examples = [
+    {
+      title: 'Cocoapods platforms',
+      namedParams: { spec: 'AFNetworking' },
+      staticPreview: this.render({
+        platforms: ['ios', 'osx', 'watchos', 'tvos'],
+      }),
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'cocoapods/p',
-      pattern: ':spec',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Cocoapods platforms',
-        namedParams: { spec: 'AFNetworking' },
-        staticPreview: this.render({
-          platforms: ['ios', 'osx', 'watchos', 'tvos'],
-        }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'platform' }
-  }
+  static defaultBadgeData = { label: 'platform' }
 
   static render({ platforms }) {
     return {

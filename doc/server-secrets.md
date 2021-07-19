@@ -80,14 +80,6 @@ An Azure DevOps Token (PAT) is required for accessing [private Azure DevOps proj
 [ado personal access tokens]: https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=vsts#create-personal-access-tokens-to-authenticate-access
 [ado token scopes]: https://docs.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/oauth?view=vsts#scopes
 
-### Bintray
-
-- `BINTRAY_USER` (yml: `private.bintray_user`)
-- `BINTRAY_API_KEY` (yml: `private.bintray_apikey`)
-
-The bintray API [requires authentication](https://bintray.com/docs/api/#_authentication)
-Create an account and obtain a token from the user profile page.
-
 ### Bitbucket (Cloud)
 
 - `BITBUCKET_USER` (yml: `private.bitbucket_username`)
@@ -129,12 +121,12 @@ Drone instance and obtain a token from the user profile page.
 - `GITHUB_URL` (yml: `public.services.github.baseUri`)
 - `GH_TOKEN` (yml: `private.gh_token`)
 
-Because of Github rate limits, you will need to provide a token, or else badges
+Because of GitHub rate limits, you will need to provide a token, or else badges
 will stop working once you hit 60 requests per hour, the
 [unauthenticated rate limit][github rate limit].
 
 You can [create a personal access token][personal access tokens] through the
-Github website. When you create the token, you can choose to give read access
+GitHub website. When you create the token, you can choose to give read access
 to your repositories. If you do that, your self-hosted Shields installation
 will have access to your private repositories.
 

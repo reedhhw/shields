@@ -1,23 +1,21 @@
-'use strict'
-
-const { ServiceTester } = require('../tester')
-const {
+import { ServiceTester } from '../tester.js'
+import {
   isMetric,
   isVPlusDottedVersionNClausesWithOptionalSuffix,
-} = require('../test-validators')
-const {
+} from '../test-validators.js'
+import {
   queryIndex,
   nuGetV3VersionJsonWithDash,
   nuGetV3VersionJsonFirstCharZero,
   nuGetV3VersionJsonFirstCharNotZero,
-} = require('../nuget-fixtures')
-const { invalidJSON } = require('../response-fixtures')
+} from '../nuget-fixtures.js'
+import { invalidJSON } from '../response-fixtures.js'
 
-const t = (module.exports = new ServiceTester({
+export const t = new ServiceTester({
   id: 'myget',
   title: 'MyGet',
   pathPrefix: '',
-}))
+})
 
 // downloads
 
@@ -29,7 +27,7 @@ t.create('total downloads (valid)')
   })
 
 t.create('total downloads (tenant)')
-  .get('/dotnet.myget/dotnet-coreclr/dt/Microsoft.DotNet.CoreCLR.json')
+  .get('/cefsharp.myget/cefsharp/dt/CefSharp.Common.json')
   .expectBadge({
     label: 'downloads',
     message: isMetric,
@@ -70,10 +68,10 @@ t.create('version (valid)')
     message: isVPlusDottedVersionNClausesWithOptionalSuffix,
   })
 
-t.create('total downloads (tenant)')
-  .get('/dotnet.myget/dotnet-coreclr/v/Microsoft.DotNet.CoreCLR.json')
+t.create('version (tenant)')
+  .get('/cefsharp.myget/cefsharp/v/cef.sdk.json')
   .expectBadge({
-    label: 'dotnet-coreclr',
+    label: 'cefsharp',
     message: isVPlusDottedVersionNClausesWithOptionalSuffix,
   })
 

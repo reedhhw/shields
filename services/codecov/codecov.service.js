@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { coveragePercentage } = require('../color-formatters')
-const { BaseSvgScrapingService } = require('..')
-const { parseJson } = require('../../core/base-service/json')
+import Joi from 'joi'
+import { coveragePercentage } from '../color-formatters.js'
+import { BaseSvgScrapingService } from '../index.js'
+import { parseJson } from '../../core/base-service/json.js'
 
 // https://docs.codecov.io/reference#totals
 // A new repository that's been added but never had any coverage reports
@@ -22,8 +20,9 @@ const legacySchema = Joi.object({
 const queryParamSchema = Joi.object({
   token: Joi.string(),
   // https://docs.codecov.io/docs/flags
-  // Flags must be lowercase, alphanumeric, and not exceed 45 characters
-  flag: Joi.string().regex(/^[a-z0-9_]{1,45}$/),
+  // Flags Must consist only of alphanumeric characters, '_', '-', or '.'
+  // and not exceed 45 characters.
+  flag: Joi.string().regex(/^[\w.-]{1,45}$/),
 }).required()
 
 const schema = Joi.object({
@@ -45,62 +44,51 @@ const documentation = `
   </p>
 `
 
-module.exports = class Codecov extends BaseSvgScrapingService {
-  static get category() {
-    return 'coverage'
+export default class Codecov extends BaseSvgScrapingService {
+  static category = 'coverage'
+  static route = {
+    base: 'codecov/c',
+    // https://docs.codecov.io/docs#section-common-questions
+    // Github, BitBucket, and GitLab are the only supported options (long or short form)
+    pattern: ':vcsName(github|gh|bitbucket|bb|gl|gitlab)/:user/:repo/:branch*',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'codecov/c',
-      // https://docs.codecov.io/docs#section-common-questions
-      // Github, BitBucket, and GitLab are the only supported options (long or short form)
-      pattern:
-        ':vcsName(github|gh|bitbucket|bb|gl|gitlab)/:user/:repo/:branch*',
-      queryParamSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Codecov',
-        pattern: ':vcsName(github|gh|bitbucket|bb|gl|gitlab)/:user/:repo',
-        namedParams: {
-          vcsName: 'github',
-          user: 'codecov',
-          repo: 'example-node',
-        },
-        queryParams: {
-          token: 'a1b2c3d4e5',
-          flag: 'flag_name',
-        },
-        staticPreview: this.render({ coverage: 90 }),
-        documentation,
+  static examples = [
+    {
+      title: 'Codecov',
+      pattern: ':vcsName(github|gh|bitbucket|bb|gl|gitlab)/:user/:repo',
+      namedParams: {
+        vcsName: 'github',
+        user: 'codecov',
+        repo: 'example-node',
       },
-      {
-        title: 'Codecov branch',
-        pattern:
-          ':vcsName(github|gh|bitbucket|bb|gl|gitlab)/:user/:repo/:branch',
-        namedParams: {
-          vcsName: 'github',
-          user: 'codecov',
-          repo: 'example-node',
-          branch: 'master',
-        },
-        queryParams: {
-          token: 'a1b2c3d4e5',
-          flag: 'flag_name',
-        },
-        staticPreview: this.render({ coverage: 90 }),
-        documentation,
+      queryParams: {
+        token: 'a1b2c3d4e5',
+        flag: 'flag_name',
       },
-    ]
-  }
+      staticPreview: this.render({ coverage: 90 }),
+      documentation,
+    },
+    {
+      title: 'Codecov branch',
+      pattern: ':vcsName(github|gh|bitbucket|bb|gl|gitlab)/:user/:repo/:branch',
+      namedParams: {
+        vcsName: 'github',
+        user: 'codecov',
+        repo: 'example-node',
+        branch: 'master',
+      },
+      queryParams: {
+        token: 'a1b2c3d4e5',
+        flag: 'flag_name',
+      },
+      staticPreview: this.render({ coverage: 90 }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'coverage' }
-  }
+  static defaultBadgeData = { label: 'coverage' }
 
   static render({ coverage }) {
     if (coverage === 'unknown') {

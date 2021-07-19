@@ -1,11 +1,9 @@
-'use strict'
-
-const moment = require('moment')
-const Joi = require('@hapi/joi')
-const { age } = require('../color-formatters')
-const { formatDate } = require('../text-formatters')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { documentation, errorMessagesFor } = require('./github-helpers')
+import moment from 'moment'
+import Joi from 'joi'
+import { age } from '../color-formatters.js'
+import { formatDate } from '../text-formatters.js'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { documentation, errorMessagesFor } from './github-helpers.js'
 
 const schema = Joi.alternatives(
   Joi.object({
@@ -20,48 +18,37 @@ const schema = Joi.alternatives(
     .min(1)
 )
 
-module.exports = class GithubReleaseDate extends GithubAuthV3Service {
-  static get category() {
-    return 'activity'
+export default class GithubReleaseDate extends GithubAuthV3Service {
+  static category = 'activity'
+  static route = {
+    base: 'github',
+    pattern: ':variant(release-date|release-date-pre)/:user/:repo',
   }
 
-  static get route() {
-    return {
-      base: 'github',
-      pattern: ':variant(release-date|release-date-pre)/:user/:repo',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub Release Date',
-        pattern: 'release-date/:user/:repo',
-        namedParams: {
-          user: 'SubtitleEdit',
-          repo: 'subtitleedit',
-        },
-        staticPreview: this.render({ date: '2017-04-13T07:50:27.000Z' }),
-        documentation,
+  static examples = [
+    {
+      title: 'GitHub Release Date',
+      pattern: 'release-date/:user/:repo',
+      namedParams: {
+        user: 'SubtitleEdit',
+        repo: 'subtitleedit',
       },
-      {
-        title: 'GitHub (Pre-)Release Date',
-        pattern: 'release-date-pre/:user/:repo',
-        namedParams: {
-          user: 'Cockatrice',
-          repo: 'Cockatrice',
-        },
-        staticPreview: this.render({ date: '2017-04-13T07:50:27.000Z' }),
-        documentation,
+      staticPreview: this.render({ date: '2017-04-13T07:50:27.000Z' }),
+      documentation,
+    },
+    {
+      title: 'GitHub (Pre-)Release Date',
+      pattern: 'release-date-pre/:user/:repo',
+      namedParams: {
+        user: 'Cockatrice',
+        repo: 'Cockatrice',
       },
-    ]
-  }
+      staticPreview: this.render({ date: '2017-04-13T07:50:27.000Z' }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'release date',
-    }
-  }
+  static defaultBadgeData = { label: 'release date' }
 
   static render({ date }) {
     const releaseDate = moment(date)

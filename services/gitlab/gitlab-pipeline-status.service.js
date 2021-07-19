@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { isBuildStatus, renderBuildStatusBadge } = require('../build-status')
-const { optionalUrl } = require('../validators')
-const { BaseSvgScrapingService, NotFound, redirector } = require('..')
+import Joi from 'joi'
+import { isBuildStatus, renderBuildStatusBadge } from '../build-status.js'
+import { optionalUrl } from '../validators.js'
+import { BaseSvgScrapingService, NotFound, redirector } from '../index.js'
 
 const badgeSchema = Joi.object({
   message: Joi.alternatives()
@@ -32,42 +30,39 @@ const documentation = `
 <p>
   Your badge should be working fine now.
 </p>
+<p>
+  NB - The badge will display 'inaccessible' if the specified repo was not found on the target Gitlab instance.
+</p>
 `
 
 class GitlabPipelineStatus extends BaseSvgScrapingService {
-  static get category() {
-    return 'build'
+  static category = 'build'
+
+  static route = {
+    base: 'gitlab/pipeline',
+    pattern: ':user/:repo/:branch+',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'gitlab/pipeline',
-      pattern: ':user/:repo/:branch+',
-      queryParamSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Gitlab pipeline status',
-        namedParams: {
-          user: 'gitlab-org',
-          repo: 'gitlab',
-          branch: 'master',
-        },
-        staticPreview: this.render({ status: 'passed' }),
-        documentation,
+  static examples = [
+    {
+      title: 'Gitlab pipeline status',
+      namedParams: {
+        user: 'gitlab-org',
+        repo: 'gitlab',
+        branch: 'master',
       },
-      {
-        title: 'Gitlab pipeline status (self-hosted)',
-        namedParams: { user: 'GNOME', repo: 'pango', branch: 'master' },
-        queryParams: { gitlab_url: 'https://gitlab.gnome.org' },
-        staticPreview: this.render({ status: 'passed' }),
-        documentation,
-      },
-    ]
-  }
+      staticPreview: this.render({ status: 'passed' }),
+      documentation,
+    },
+    {
+      title: 'Gitlab pipeline status (self-hosted)',
+      namedParams: { user: 'GNOME', repo: 'pango', branch: 'master' },
+      queryParams: { gitlab_url: 'https://gitlab.gnome.org' },
+      staticPreview: this.render({ status: 'passed' }),
+      documentation,
+    },
+  ]
 
   static render({ status }) {
     return renderBuildStatusBadge({ status })
@@ -102,7 +97,4 @@ const GitlabPipelineStatusRedirector = redirector({
   dateAdded: new Date('2020-07-12'),
 })
 
-module.exports = {
-  GitlabPipelineStatus,
-  GitlabPipelineStatusRedirector,
-}
+export { GitlabPipelineStatus, GitlabPipelineStatusRedirector }

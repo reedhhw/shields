@@ -1,8 +1,6 @@
-'use strict'
-
-const { expect } = require('chai')
-const prometheus = require('prom-client')
-const { promClientJsonToInfluxV2 } = require('./format-converters')
+import { expect } from 'chai'
+import prometheus from 'prom-client'
+import { promClientJsonToInfluxV2 } from './format-converters.js'
 
 describe('Metric format converters', function () {
   describe('prom-client JSON to InfluxDB line protocol (version 2)', function () {
@@ -22,7 +20,7 @@ describe('Metric format converters', function () {
       expect(influx).to.be.equal('prometheus counter1=11')
     })
 
-    it('converts a counter (from prometheus registry)', function () {
+    it('converts a counter (from prometheus registry)', async function () {
       const register = new prometheus.Registry()
       const counter = new prometheus.Counter({
         name: 'counter1',
@@ -31,7 +29,7 @@ describe('Metric format converters', function () {
       })
       counter.inc(11)
 
-      const influx = promClientJsonToInfluxV2(register.getMetricsAsJSON())
+      const influx = promClientJsonToInfluxV2(await register.getMetricsAsJSON())
 
       expect(influx).to.be.equal('prometheus counter1=11')
     })
@@ -52,7 +50,7 @@ describe('Metric format converters', function () {
       expect(influx).to.be.equal('prometheus gauge1=20')
     })
 
-    it('converts a gauge (from prometheus registry)', function () {
+    it('converts a gauge (from prometheus registry)', async function () {
       const register = new prometheus.Registry()
       const gauge = new prometheus.Gauge({
         name: 'gauge1',
@@ -61,7 +59,7 @@ describe('Metric format converters', function () {
       })
       gauge.inc(20)
 
-      const influx = promClientJsonToInfluxV2(register.getMetricsAsJSON())
+      const influx = promClientJsonToInfluxV2(await register.getMetricsAsJSON())
 
       expect(influx).to.be.equal('prometheus gauge1=20')
     })
@@ -101,7 +99,7 @@ prometheus histogram1_count=3,histogram1_sum=111`)
       )
     })
 
-    it('converts a histogram (from prometheus registry)', function () {
+    it('converts a histogram (from prometheus registry)', async function () {
       const register = new prometheus.Registry()
       const histogram = new prometheus.Histogram({
         name: 'histogram1',
@@ -113,7 +111,7 @@ prometheus histogram1_count=3,histogram1_sum=111`)
       histogram.observe(10)
       histogram.observe(1)
 
-      const influx = promClientJsonToInfluxV2(register.getMetricsAsJSON())
+      const influx = promClientJsonToInfluxV2(await register.getMetricsAsJSON())
 
       expect(sortLines(influx)).to.be.equal(
         sortLines(`prometheus,le=+Inf histogram1_bucket=3
@@ -151,7 +149,7 @@ prometheus summary1_count=3,summary1_sum=111`)
       )
     })
 
-    it('converts a summary (from prometheus registry)', function () {
+    it('converts a summary (from prometheus registry)', async function () {
       const register = new prometheus.Registry()
       const summary = new prometheus.Summary({
         name: 'summary1',
@@ -163,7 +161,7 @@ prometheus summary1_count=3,summary1_sum=111`)
       summary.observe(10)
       summary.observe(1)
 
-      const influx = promClientJsonToInfluxV2(register.getMetricsAsJSON())
+      const influx = promClientJsonToInfluxV2(await register.getMetricsAsJSON())
 
       expect(sortLines(influx)).to.be.equal(
         sortLines(`prometheus,quantile=0.99 summary1=100

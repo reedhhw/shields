@@ -1,8 +1,7 @@
-'use strict'
-
-const { expect } = require('chai')
-const config = require('config').util.toObject()
-const GithubApiProvider = require('./github-api-provider')
+import { expect } from 'chai'
+import config from 'config'
+import request from 'request'
+import GithubApiProvider from './github-api-provider.js'
 
 describe('Github API provider', function () {
   const baseUrl = process.env.GITHUB_URL || 'https://api.github.com'
@@ -10,7 +9,7 @@ describe('Github API provider', function () {
 
   let token
   before(function () {
-    token = config.private.gh_token
+    token = config.util.toObject().private.gh_token
     if (!token) {
       throw Error('The integration tests require a gh_token to be set')
     }
@@ -32,7 +31,7 @@ describe('Github API provider', function () {
       this.timeout('20s')
       for (let i = 0; i < 10; ++i) {
         await githubApiProvider.requestAsPromise(
-          require('request'),
+          request,
           '/repos/rust-lang/rust',
           {}
         )
@@ -54,7 +53,7 @@ describe('Github API provider', function () {
     const headers = []
     async function performOneRequest() {
       const { res } = await githubApiProvider.requestAsPromise(
-        require('request'),
+        request,
         '/repos/rust-lang/rust',
         {}
       )
@@ -79,7 +78,8 @@ describe('Github API provider', function () {
       }
     })
 
-    it.skip('should update the token with the final limit remaining and reset time', function () {
+    // Is this test failing? See https://github.com/badges/shields/pull/4590#issuecomment-708551801
+    it('should update the token with the final limit remaining and reset time', function () {
       const lastHeaders = headers.slice(-1)[0]
       const reserve = reserveFraction * +lastHeaders['x-ratelimit-limit']
       const usesRemaining = +lastHeaders['x-ratelimit-remaining'] - reserve

@@ -1,8 +1,6 @@
-'use strict'
-
-const { test, given } = require('sazerac')
-const sinon = require('sinon')
-const {
+import { test, given } from 'sazerac'
+import sinon from 'sinon'
+import {
   starRating,
   currencyFromCode,
   ordinalNumber,
@@ -12,7 +10,7 @@ const {
   maybePluralize,
   formatDate,
   formatRelativeDate,
-} = require('./text-formatters')
+} from './text-formatters.js'
 
 describe('Text formatters', function () {
   test(starRating, () => {
@@ -40,6 +38,7 @@ describe('Text formatters', function () {
   })
 
   test(metric, () => {
+    /* eslint-disable no-loss-of-precision */
     given(999).expect('999')
     given(1000).expect('1k')
     given(1100).expect('1.1k')
@@ -60,6 +59,7 @@ describe('Text formatters', function () {
     given(1100000000000000000000).expect('1.1Z')
     given(2222222222222222222222222).expect('2.2Y')
     given(22222222222222222222222222).expect('22Y')
+    /* eslint-enable */
   })
 
   test(omitv, () => {

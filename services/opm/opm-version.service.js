@@ -1,37 +1,27 @@
-'use strict'
+import { renderVersionBadge } from '../version.js'
+import { BaseService, NotFound, InvalidResponse } from '../index.js'
 
-const { renderVersionBadge } = require('../version')
-const { BaseService, NotFound, InvalidResponse } = require('..')
+export default class OpmVersion extends BaseService {
+  static category = 'version'
 
-module.exports = class OpmVersion extends BaseService {
-  static get category() {
-    return 'version'
+  static route = {
+    base: 'opm/v',
+    pattern: ':user/:moduleName',
   }
 
-  static get route() {
-    return {
-      base: 'opm/v',
-      pattern: ':user/:moduleName',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'OPM',
-        namedParams: {
-          user: 'openresty',
-          moduleName: 'lua-resty-lrucache',
-        },
-        staticPreview: renderVersionBadge({ version: 'v0.08' }),
+  static examples = [
+    {
+      title: 'OPM',
+      namedParams: {
+        user: 'openresty',
+        moduleName: 'lua-resty-lrucache',
       },
-    ]
-  }
+      staticPreview: renderVersionBadge({ version: 'v0.08' }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'opm',
-    }
+  static defaultBadgeData = {
+    label: 'opm',
   }
 
   async fetch({ user, moduleName }) {
@@ -49,8 +39,8 @@ module.exports = class OpmVersion extends BaseService {
       },
     })
 
-    // XXX: intercept 302 redirects and set followRedirect to false
-    const location = res.request.path
+    // TODO: set followRedirect to false and intercept 302 redirects
+    const location = res.request.redirects[0]
     if (!location) {
       throw new NotFound({ prettyMessage: 'module not found' })
     }

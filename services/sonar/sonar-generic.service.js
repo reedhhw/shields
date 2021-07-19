@@ -1,8 +1,6 @@
-'use strict'
-
-const { metric } = require('../text-formatters')
-const SonarBase = require('./sonar-base')
-const { queryParamSchema, getLabel } = require('./sonar-helpers')
+import { metric } from '../text-formatters.js'
+import SonarBase from './sonar-base.js'
+import { queryParamSchema, getLabel } from './sonar-helpers.js'
 
 // This service is intended to be a temporary solution to avoid breaking
 // any existing users/badges that were utilizing the "other" Sonar metrics
@@ -106,22 +104,16 @@ const metricNames = [
 ]
 const metricNameRouteParam = metricNames.join('|')
 
-module.exports = class SonarGeneric extends SonarBase {
-  static get category() {
-    return 'analysis'
+export default class SonarGeneric extends SonarBase {
+  static category = 'analysis'
+
+  static route = {
+    base: 'sonar',
+    pattern: `:metricName(${metricNameRouteParam})/:component`,
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'sonar',
-      pattern: `:metricName(${metricNameRouteParam})/:component`,
-      queryParamSchema,
-    }
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'sonar' }
-  }
+  static defaultBadgeData = { label: 'sonar' }
 
   static render({ metricName, metricValue }) {
     return {

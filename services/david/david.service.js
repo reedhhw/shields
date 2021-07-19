@@ -1,7 +1,5 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   status: Joi.allow(
@@ -40,38 +38,29 @@ const statusMap = {
   },
 }
 
-module.exports = class David extends BaseJsonService {
-  static get category() {
-    return 'dependencies'
+export default class David extends BaseJsonService {
+  static category = 'dependencies'
+  static route = {
+    base: 'david',
+    pattern: ':kind(dev|optional|peer)?/:user/:repo',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'david',
-      pattern: ':kind(dev|optional|peer)?/:user/:repo',
-      queryParamSchema,
-    }
-  }
+  static examples = [
+    {
+      title: 'David',
+      namedParams: { user: 'expressjs', repo: 'express' },
+      staticPreview: this.render({ status: 'uptodate' }),
+    },
+    {
+      title: 'David (path)',
+      namedParams: { user: 'babel', repo: 'babel' },
+      queryParams: { path: 'packages/babel-core' },
+      staticPreview: this.render({ status: 'uptodate' }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'David',
-        namedParams: { user: 'expressjs', repo: 'express' },
-        staticPreview: this.render({ status: 'uptodate' }),
-      },
-      {
-        title: 'David (path)',
-        namedParams: { user: 'babel', repo: 'babel' },
-        queryParams: { path: 'packages/babel-core' },
-        staticPreview: this.render({ status: 'uptodate' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'dependencies' }
-  }
+  static defaultBadgeData = { label: 'dependencies' }
 
   static render({ status, kind }) {
     return {
@@ -92,12 +81,12 @@ module.exports = class David extends BaseJsonService {
       options: { qs: { path } },
       errorMessages: {
         /* note:
-        david returns a 500 response for 'not found'
+        david returns a 504 response for 'not found'
         e.g: https://david-dm.org/foo/barbaz/info.json
         not a 404 so we can't handle 'not found' cleanly
         because this might also be some other error.
         */
-        500: 'repo or path not found or david internal error',
+        504: 'repo or path not found or david internal error',
       },
     })
   }

@@ -1,8 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
+import Joi from 'joi'
+import { createServiceTester } from '../tester.js'
 const isCondaPlatform = Joi.string().regex(/^\w+-[\w\d]+( \| \w+-[\w\d]+)*$/)
-const t = (module.exports = require('../tester').createServiceTester())
+export const t = await createServiceTester()
 
 t.create('platform').get('/p/conda-forge/zlib.json').expectBadge({
   label: 'conda|platform',

@@ -1,11 +1,10 @@
-'use strict'
-const os = require('os')
-const nock = require('nock')
-const sinon = require('sinon')
-const { expect } = require('chai')
-const log = require('./log')
-const InfluxMetrics = require('./influx-metrics')
-require('../register-chai-plugins.spec')
+import os from 'os'
+import nock from 'nock'
+import sinon from 'sinon'
+import { expect } from 'chai'
+import log from './log.js'
+import InfluxMetrics from './influx-metrics.js'
+import '../register-chai-plugins.spec.js'
 describe('Influx metrics', function () {
   const metricInstance = {
     metrics() {
@@ -36,7 +35,7 @@ describe('Influx metrics', function () {
         instanceIdEnvVarName: 'INSTANCE_ID',
       })
 
-      expect(influxMetrics.metrics()).to.contain('instance=instance3')
+      expect(await influxMetrics.metrics()).to.contain('instance=instance3')
     })
 
     it('should use a hostname as an instance label', async function () {
@@ -46,7 +45,9 @@ describe('Influx metrics', function () {
       }
       const influxMetrics = new InfluxMetrics(metricInstance, customConfig)
 
-      expect(influxMetrics.metrics()).to.be.contain('instance=test-hostname')
+      expect(await influxMetrics.metrics()).to.be.contain(
+        'instance=test-hostname'
+      )
     })
 
     it('should use a random string as an instance label', async function () {
@@ -55,7 +56,7 @@ describe('Influx metrics', function () {
       }
       const influxMetrics = new InfluxMetrics(metricInstance, customConfig)
 
-      expect(influxMetrics.metrics()).to.be.match(/instance=\w+ /)
+      expect(await influxMetrics.metrics()).to.be.match(/instance=\w+ /)
     })
 
     it('should use a hostname alias as an instance label', async function () {
@@ -66,7 +67,7 @@ describe('Influx metrics', function () {
       }
       const influxMetrics = new InfluxMetrics(metricInstance, customConfig)
 
-      expect(influxMetrics.metrics()).to.be.contain(
+      expect(await influxMetrics.metrics()).to.be.contain(
         'instance=test-hostname-alias'
       )
     })
@@ -148,7 +149,7 @@ describe('Influx metrics', function () {
           .and(
             sinon.match.has(
               'message',
-              'Cannot push metrics. Cause: NetConnectNotAllowedError: Nock: Disallowed net connect for "shields-metrics.io:80/metrics"'
+              'Cannot push metrics. Cause: RequestError: Nock: Disallowed net connect for "shields-metrics.io:80/metrics"'
             )
           )
       )

@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { colorScale } = require('../color-formatters')
-const ScrutinizerBase = require('./scrutinizer-base')
+import Joi from 'joi'
+import { colorScale } from '../color-formatters.js'
+import ScrutinizerBase from './scrutinizer-base.js'
 
 const schema = Joi.object({
   default_branch: Joi.string().required(),
@@ -30,14 +28,10 @@ const scale = colorScale(
 )
 
 class ScrutinizerQualityBase extends ScrutinizerBase {
-  static get category() {
-    return 'analysis'
-  }
+  static category = 'analysis'
 
-  static get defaultBadgeData() {
-    return {
-      label: 'code quality',
-    }
+  static defaultBadgeData = {
+    label: 'code quality',
   }
 
   static render({ score }) {
@@ -59,28 +53,24 @@ class ScrutinizerQualityBase extends ScrutinizerBase {
 }
 
 class ScrutinizerQuality extends ScrutinizerQualityBase {
-  static get route() {
-    return {
-      base: 'scrutinizer/quality',
-      pattern: ':vcs(g|b)/:user/:repo/:branch*',
-    }
+  static route = {
+    base: 'scrutinizer/quality',
+    pattern: ':vcs(g|b)/:user/:repo/:branch*',
   }
 
-  static get examples() {
-    return [
-      {
-        title: 'Scrutinizer code quality (GitHub/Bitbucket)',
-        pattern: ':vcs(g|b)/:user/:repo/:branch?',
-        namedParams: {
-          vcs: 'g',
-          user: 'filp',
-          repo: 'whoops',
-          branch: 'master',
-        },
-        staticPreview: this.render({ score: 8.26 }),
+  static examples = [
+    {
+      title: 'Scrutinizer code quality (GitHub/Bitbucket)',
+      pattern: ':vcs(g|b)/:user/:repo/:branch?',
+      namedParams: {
+        vcs: 'g',
+        user: 'filp',
+        repo: 'whoops',
+        branch: 'master',
       },
-    ]
-  }
+      staticPreview: this.render({ score: 8.26 }),
+    },
+  ]
 
   async handle({ vcs, user, repo, branch }) {
     return this.makeBadge({
@@ -92,32 +82,28 @@ class ScrutinizerQuality extends ScrutinizerQualityBase {
 }
 
 class ScrutinizerQualityGitLab extends ScrutinizerQualityBase {
-  static get route() {
-    return {
-      base: 'scrutinizer/quality/gl',
-      pattern: ':instance/:user/:repo/:branch*',
-    }
+  static route = {
+    base: 'scrutinizer/quality/gl',
+    pattern: ':instance/:user/:repo/:branch*',
   }
 
-  static get examples() {
-    // There are no known anonymous accessible Scrutinizer reports available for GitLab repos.
-    // The example used is valid, but the project will not be accessible if Shields users try to use it.
-    // https://gitlab.propertywindow.nl/propertywindow/client
-    // https://scrutinizer-ci.com/gl/propertywindow/propertywindow/client/badges/quality-score.png?b=master&s=dfae6992a48184cc2333b4c349cec0447f0d67c2
-    return [
-      {
-        title: 'Scrutinizer coverage (GitLab)',
-        pattern: ':instance/:user/:repo/:branch?',
-        namedParams: {
-          instance: 'propertywindow',
-          user: 'propertywindow',
-          repo: 'client',
-          branch: 'master',
-        },
-        staticPreview: this.render({ score: 10.0 }),
+  // There are no known anonymous accessible Scrutinizer reports available for GitLab repos.
+  // The example used is valid, but the project will not be accessible if Shields users try to use it.
+  // https://gitlab.propertywindow.nl/propertywindow/client
+  // https://scrutinizer-ci.com/gl/propertywindow/propertywindow/client/badges/quality-score.png?b=master&s=dfae6992a48184cc2333b4c349cec0447f0d67c2
+  static examples = [
+    {
+      title: 'Scrutinizer coverage (GitLab)',
+      pattern: ':instance/:user/:repo/:branch?',
+      namedParams: {
+        instance: 'propertywindow',
+        user: 'propertywindow',
+        repo: 'client',
+        branch: 'master',
       },
-    ]
-  }
+      staticPreview: this.render({ score: 10.0 }),
+    },
+  ]
 
   async handle({ instance, user, repo, branch }) {
     return this.makeBadge({
@@ -129,11 +115,9 @@ class ScrutinizerQualityGitLab extends ScrutinizerQualityBase {
 }
 
 class ScrutinizerQualityPlainGit extends ScrutinizerQualityBase {
-  static get route() {
-    return {
-      base: 'scrutinizer/quality/gp',
-      pattern: ':slug/:branch*',
-    }
+  static route = {
+    base: 'scrutinizer/quality/gp',
+    pattern: ':slug/:branch*',
   }
 
   async handle({ slug, branch }) {
@@ -141,7 +125,7 @@ class ScrutinizerQualityPlainGit extends ScrutinizerQualityBase {
   }
 }
 
-module.exports = [
+export default [
   ScrutinizerQuality,
   ScrutinizerQualityGitLab,
   ScrutinizerQualityPlainGit,

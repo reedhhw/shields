@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const bitbucketIssuesSchema = Joi.object({
   size: nonNegativeInteger,
@@ -14,37 +12,22 @@ function issueClassGenerator(raw) {
   const badgeSuffix = raw ? '' : ' open'
 
   return class BitbucketIssues extends BaseJsonService {
-    static get name() {
-      return `BitbucketIssues${raw ? 'Raw' : ''}`
-    }
+    static name = `BitbucketIssues${raw ? 'Raw' : ''}`
+    static category = 'issue-tracking'
+    static route = { base: `bitbucket/${routePrefix}`, pattern: ':user/:repo' }
 
-    static get category() {
-      return 'issue-tracking'
-    }
-
-    static get route() {
-      return {
-        base: `bitbucket/${routePrefix}`,
-        pattern: ':user/:repo',
-      }
-    }
-
-    static get examples() {
-      return [
-        {
-          title: 'Bitbucket open issues',
-          namedParams: {
-            user: 'atlassian',
-            repo: 'python-bitbucket',
-          },
-          staticPreview: this.render({ issues: 33 }),
+    static examples = [
+      {
+        title: 'Bitbucket open issues',
+        namedParams: {
+          user: 'atlassian',
+          repo: 'python-bitbucket',
         },
-      ]
-    }
+        staticPreview: this.render({ issues: 33 }),
+      },
+    ]
 
-    static get defaultBadgeData() {
-      return { label: 'issues' }
-    }
+    static defaultBadgeData = { label: 'issues' }
 
     static render({ issues }) {
       return {
@@ -74,4 +57,5 @@ function issueClassGenerator(raw) {
   }
 }
 
-module.exports = [true, false].map(issueClassGenerator)
+export const BitbucketRawIssues = issueClassGenerator(true)
+export const BitbucketNonRawIssues = issueClassGenerator(false)

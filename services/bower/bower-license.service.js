@@ -1,33 +1,19 @@
-'use strict'
+import { renderLicenseBadge } from '../licenses.js'
+import BaseBowerService from './bower-base.js'
 
-const { renderLicenseBadge } = require('../licenses')
-const BaseBowerService = require('./bower-base')
+export default class BowerLicense extends BaseBowerService {
+  static category = 'license'
+  static route = { base: 'bower/l', pattern: ':packageName' }
 
-module.exports = class BowerLicense extends BaseBowerService {
-  static get category() {
-    return 'license'
-  }
+  static examples = [
+    {
+      title: 'Bower',
+      namedParams: { packageName: 'bootstrap' },
+      staticPreview: renderLicenseBadge({ licenses: ['MIT'] }),
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'bower/l',
-      pattern: ':packageName',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Bower',
-        namedParams: { packageName: 'bootstrap' },
-        staticPreview: renderLicenseBadge({ licenses: ['MIT'] }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'license' }
-  }
+  static defaultBadgeData = { label: 'license' }
 
   async handle({ packageName }) {
     const data = await this.fetch({ packageName })

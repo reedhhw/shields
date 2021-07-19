@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 // https://developer.opencollective.com/#/api/collectives?id=get-info
 const collectiveDetailsSchema = Joi.object().keys({
@@ -21,10 +19,8 @@ function buildMembersArraySchema({ userType, tierRequired }) {
   return Joi.array().items(Joi.object().keys(keys))
 }
 
-module.exports = class OpencollectiveBase extends BaseJsonService {
-  static get category() {
-    return 'funding'
-  }
+export default class OpencollectiveBase extends BaseJsonService {
+  static category = 'funding'
 
   static buildRoute(base, withTierId) {
     return {

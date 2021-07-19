@@ -1,36 +1,20 @@
-'use strict'
+import { metric } from '../text-formatters.js'
+import { BaseAmoService, keywords } from './amo-base.js'
 
-const { metric } = require('../text-formatters')
-const { BaseAmoService, keywords } = require('./amo-base')
+export default class AmoUsers extends BaseAmoService {
+  static category = 'downloads'
+  static route = { base: 'amo/users', pattern: ':addonId' }
 
-module.exports = class AmoUsers extends BaseAmoService {
-  static get category() {
-    return 'downloads'
-  }
+  static examples = [
+    {
+      title: 'Mozilla Add-on',
+      namedParams: { addonId: 'dustman' },
+      staticPreview: this.render({ users: 750 }),
+      keywords,
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'amo/users',
-      pattern: ':addonId',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Mozilla Add-on',
-        namedParams: { addonId: 'dustman' },
-        staticPreview: this.render({ users: 750 }),
-        keywords,
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'users',
-    }
-  }
+  static defaultBadgeData = { label: 'users' }
 
   static render({ users }) {
     return {

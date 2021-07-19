@@ -1,14 +1,9 @@
-'use strict'
+import { isPhpVersionReduction } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
-const { isPhpVersionReduction } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
-
-t.create('gets the package version of symfony')
-  .get('/symfony/symfony/master.json')
-  .expectBadge({ label: 'php', message: isPhpVersionReduction })
-
-t.create('gets the package version of symfony 2.8')
-  .get('/symfony/symfony/2.8.json')
+t.create('gets the package version of symfony 5.1')
+  .get('/symfony/symfony/5.1.json')
   .expectBadge({ label: 'php', message: isPhpVersionReduction })
 
 t.create('gets the package version of yii')

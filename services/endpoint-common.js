@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const validate = require('../core/base-service/validate')
-const { InvalidResponse } = require('.')
+import Joi from 'joi'
+import validate from '../core/base-service/validate.js'
+import { InvalidResponse } from './index.js'
 
 const optionalStringWhenNamedLogoPresent = Joi.alternatives().conditional(
   'namedLogo',
@@ -66,6 +64,7 @@ async function fetchEndpointData(
     schema: anySchema,
     url,
     errorMessages,
+    options: { gzip: true },
   })
   return validateEndpointData(json, {
     prettyErrorMessage: validationPrettyErrorMessage,
@@ -73,7 +72,4 @@ async function fetchEndpointData(
   })
 }
 
-module.exports = {
-  validateEndpointData,
-  fetchEndpointData,
-}
+export { validateEndpointData, fetchEndpointData }

@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { optionalUrl, nonNegativeInteger } = require('../validators')
-const { BaseJsonService, NotFound } = require('..')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { optionalUrl, nonNegativeInteger } from '../validators.js'
+import { BaseJsonService, NotFound } from '../index.js'
 
 const schema = Joi.object({
   username: Joi.string().required(),
@@ -20,41 +18,33 @@ const documentation = `
 <p>Failing that, you can also visit your profile page, where your user ID will be in the header in a tag like this: <code>&lt;link href='https://your.mastodon.server/api/salmon/{your-user-id}' rel='salmon'></code></p>
 `
 
-module.exports = class MastodonFollow extends BaseJsonService {
-  static get category() {
-    return 'social'
+export default class MastodonFollow extends BaseJsonService {
+  static category = 'social'
+
+  static route = {
+    base: 'mastodon/follow',
+    pattern: ':id',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'mastodon/follow',
-      pattern: ':id',
-      queryParamSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Mastodon Follow',
-        namedParams: {
-          id: '26471',
-        },
-        queryParams: { domain: 'https://mastodon.social' },
-        staticPreview: {
-          label: 'Follow',
-          message: '862',
-          style: 'social',
-        },
-        documentation,
+  static examples = [
+    {
+      title: 'Mastodon Follow',
+      namedParams: {
+        id: '26471',
       },
-    ]
-  }
+      queryParams: { domain: 'https://mastodon.social' },
+      staticPreview: {
+        label: 'Follow',
+        message: '862',
+        style: 'social',
+      },
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      namedLogo: 'mastodon',
-    }
+  static defaultBadgeData = {
+    namedLogo: 'mastodon',
   }
 
   static render({ username, followers, domain }) {

@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { isBuildStatus, renderBuildStatusBadge } = require('../build-status')
-const { BaseSvgScrapingService } = require('..')
-const { documentation } = require('./github-helpers')
+import Joi from 'joi'
+import { isBuildStatus, renderBuildStatusBadge } from '../build-status.js'
+import { BaseSvgScrapingService } from '../index.js'
+import { documentation } from './github-helpers.js'
 
 const schema = Joi.object({
   message: Joi.alternatives()
@@ -11,67 +9,81 @@ const schema = Joi.object({
     .required(),
 }).required()
 
+const queryParamSchema = Joi.object({
+  event: Joi.string(),
+}).required()
+
 const keywords = ['action', 'actions']
 
-module.exports = class GithubWorkflowStatus extends BaseSvgScrapingService {
-  static get category() {
-    return 'build'
+export default class GithubWorkflowStatus extends BaseSvgScrapingService {
+  static category = 'build'
+
+  static route = {
+    base: 'github/workflow/status',
+    pattern: ':user/:repo/:workflow/:branch*',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'github/workflow/status',
-      pattern: ':user/:repo/:workflow/:branch*',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub Workflow Status',
-        pattern: ':user/:repo/:workflow',
-        namedParams: {
-          user: 'actions',
-          repo: 'toolkit',
-          workflow: 'Main workflow',
-        },
-        staticPreview: renderBuildStatusBadge({
-          status: 'passing',
-        }),
-        documentation,
-        keywords,
+  static examples = [
+    {
+      title: 'GitHub Workflow Status',
+      pattern: ':user/:repo/:workflow',
+      namedParams: {
+        user: 'actions',
+        repo: 'toolkit',
+        workflow: 'toolkit-unit-tests',
       },
-      {
-        title: 'GitHub Workflow Status (branch)',
-        pattern: ':user/:repo/:workflow/:branch',
-        namedParams: {
-          user: 'actions',
-          repo: 'toolkit',
-          workflow: 'Main workflow',
-          branch: 'master',
-        },
-        staticPreview: renderBuildStatusBadge({
-          status: 'passing',
-        }),
-        documentation,
-        keywords,
+      staticPreview: renderBuildStatusBadge({
+        status: 'passing',
+      }),
+      documentation,
+      keywords,
+    },
+    {
+      title: 'GitHub Workflow Status (branch)',
+      pattern: ':user/:repo/:workflow/:branch',
+      namedParams: {
+        user: 'actions',
+        repo: 'toolkit',
+        workflow: 'toolkit-unit-tests',
+        branch: 'master',
       },
-    ]
+      staticPreview: renderBuildStatusBadge({
+        status: 'passing',
+      }),
+      documentation,
+      keywords,
+    },
+    {
+      title: 'GitHub Workflow Status (event)',
+      pattern: ':user/:repo/:workflow',
+      namedParams: {
+        user: 'actions',
+        repo: 'toolkit',
+        workflow: 'toolkit-unit-tests',
+      },
+      queryParams: {
+        event: 'push',
+      },
+      staticPreview: renderBuildStatusBadge({
+        status: 'passing',
+      }),
+      documentation,
+      keywords,
+    },
+  ]
+
+  static defaultBadgeData = {
+    label: 'build',
   }
 
-  static get defaultBadgeData() {
-    return {
-      label: 'build',
-    }
-  }
-
-  async fetch({ user, repo, workflow, branch }) {
+  async fetch({ user, repo, workflow, branch, event }) {
     const { message: status } = await this._requestSvg({
       schema,
       url: `https://github.com/${user}/${repo}/workflows/${encodeURIComponent(
         workflow
       )}/badge.svg`,
-      options: { qs: { branch } },
+      options: { qs: { branch, event } },
       valueMatcher: />([^<>]+)<\/tspan><\/text><\/g><path/,
       errorMessages: {
         404: 'repo, branch, or workflow not found',
@@ -81,8 +93,8 @@ module.exports = class GithubWorkflowStatus extends BaseSvgScrapingService {
     return { status }
   }
 
-  async handle({ user, repo, workflow, branch }) {
-    const { status } = await this.fetch({ user, repo, workflow, branch })
+  async handle({ user, repo, workflow, branch }, { event }) {
+    const { status } = await this.fetch({ user, repo, workflow, branch, event })
     return renderBuildStatusBadge({ status })
   }
 }

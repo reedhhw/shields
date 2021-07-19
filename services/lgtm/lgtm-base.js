@@ -1,7 +1,5 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   alerts: Joi.number().required(),
@@ -22,18 +20,12 @@ const hostMappings = {
   gitlab: 'gl',
 }
 
-module.exports = class LgtmBaseService extends BaseJsonService {
-  static get category() {
-    return 'analysis'
-  }
+export default class LgtmBaseService extends BaseJsonService {
+  static category = 'analysis'
 
-  static get defaultBadgeData() {
-    return { label: 'lgtm' }
-  }
+  static defaultBadgeData = { label: 'lgtm' }
 
-  static get pattern() {
-    return `:host(${Object.keys(hostMappings).join('|')})/:user/:repo`
-  }
+  static pattern = `:host(${Object.keys(hostMappings).join('|')})/:user/:repo`
 
   async fetch({ host, user, repo }) {
     const mappedHost = hostMappings[host]

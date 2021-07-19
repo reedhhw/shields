@@ -1,12 +1,10 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const {
+import Joi from 'joi'
+import {
   queryParamSchema,
   exampleQueryParams,
   renderWebsiteStatus,
-} = require('../website-status')
-const { BaseJsonService } = require('..')
+} from '../website-status.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.array()
   .items(Joi.object().keys({ su: Joi.boolean() }))
@@ -17,37 +15,25 @@ const schema = Joi.array()
  */
 const exampleCheckUuid = 'jkiwn052-ntpp-4lbb-8d45-ihew6d9ucoei'
 
-module.exports = class NodePingStatus extends BaseJsonService {
-  static get category() {
-    return 'monitoring'
+export default class NodePingStatus extends BaseJsonService {
+  static category = 'monitoring'
+
+  static route = {
+    base: 'nodeping/status',
+    pattern: ':checkUuid',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'nodeping/status',
-      pattern: ':checkUuid',
-      queryParamSchema,
-    }
-  }
+  static examples = [
+    {
+      title: 'NodePing status',
+      namedParams: { checkUuid: exampleCheckUuid },
+      queryParams: exampleQueryParams,
+      staticPreview: renderWebsiteStatus({ isUp: true }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'NodePing status',
-        namedParams: {
-          checkUuid: exampleCheckUuid,
-        },
-        queryParams: exampleQueryParams,
-        staticPreview: renderWebsiteStatus({ isUp: true }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'Status',
-    }
-  }
+  static defaultBadgeData = { label: 'status' }
 
   async fetch({ checkUuid }) {
     const rows = await this._requestJson({

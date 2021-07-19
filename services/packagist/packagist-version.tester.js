@@ -1,15 +1,11 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const {
-  isVPlusDottedVersionNClausesWithOptionalSuffix,
-} = require('../test-validators')
-const { ServiceTester } = require('../tester')
-const t = (module.exports = new ServiceTester({
+import Joi from 'joi'
+import { isVPlusDottedVersionNClausesWithOptionalSuffix } from '../test-validators.js'
+import { ServiceTester } from '../tester.js'
+export const t = new ServiceTester({
   id: 'packagist',
   title: 'Packagist Version',
   pathPrefix: '/packagist',
-}))
+})
 
 /*
   validator for a packagist version number
@@ -36,7 +32,7 @@ t.create('version (invalid package name)')
   .expectBadge({ label: 'packagist', message: 'not found' })
 
 t.create('pre-release version (valid)')
-  .get('/v/symfony/symfony.json?include_prereleases')
+  .get('/v/guzzlehttp/guzzle.json?include_prereleases')
   .expectBadge({
     label: 'packagist',
     message: isVPlusDottedVersionNClausesWithOptionalSuffix,

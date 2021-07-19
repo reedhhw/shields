@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const KeybaseProfile = require('./keybase-profile')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import KeybaseProfile from './keybase-profile.js'
 
 const stellarAddressSchema = Joi.object({
   status: Joi.object({
@@ -26,32 +24,26 @@ const stellarAddressSchema = Joi.object({
     .max(1),
 }).required()
 
-module.exports = class KeybaseXLM extends KeybaseProfile {
-  static get route() {
-    return {
-      base: 'keybase/xlm',
-      pattern: ':username',
-    }
+export default class KeybaseXLM extends KeybaseProfile {
+  static route = {
+    base: 'keybase/xlm',
+    pattern: ':username',
   }
 
-  static get examples() {
-    return [
-      {
-        title: 'Keybase XLM',
-        namedParams: { username: 'skyplabs' },
-        staticPreview: this.render({
-          address: 'GCGH37DYONEBPGAZGCHJEZZF3J2Q3EFYZBQBE6UJL5QKTULCMEA6MXLA',
-        }),
-        keywords: ['stellar'],
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Keybase XLM',
+      namedParams: { username: 'skyplabs' },
+      staticPreview: this.render({
+        address: 'GCGH37DYONEBPGAZGCHJEZZF3J2Q3EFYZBQBE6UJL5QKTULCMEA6MXLA',
+      }),
+      keywords: ['stellar'],
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'xlm',
-      color: 'informational',
-    }
+  static defaultBadgeData = {
+    label: 'xlm',
+    color: 'informational',
   }
 
   static render({ address }) {
@@ -60,13 +52,11 @@ module.exports = class KeybaseXLM extends KeybaseProfile {
     }
   }
 
-  static get apiVersion() {
-    return '1.0'
-  }
+  static apiVersion = '1.0'
 
   async handle({ username }) {
     const options = {
-      form: {
+      qs: {
         usernames: username,
         fields: 'stellar',
       },

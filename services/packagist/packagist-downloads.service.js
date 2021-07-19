@@ -1,15 +1,13 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { downloadCount } = require('../color-formatters')
-const { optionalUrl } = require('../validators')
-const {
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { downloadCount } from '../color-formatters.js'
+import { optionalUrl } from '../validators.js'
+import {
   keywords,
   BasePackagistService,
   customServerDocumentationFragment,
   cacheDocumentationFragment,
-} = require('./packagist-base')
+} from './packagist-base.js'
 
 const periodMap = {
   dm: {
@@ -40,58 +38,50 @@ const queryParamSchema = Joi.object({
   server: optionalUrl,
 }).required()
 
-module.exports = class PackagistDownloads extends BasePackagistService {
-  static get category() {
-    return 'downloads'
+export default class PackagistDownloads extends BasePackagistService {
+  static category = 'downloads'
+
+  static route = {
+    base: 'packagist',
+    pattern: ':interval(dm|dd|dt)/:user/:repo',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'packagist',
-      pattern: ':interval(dm|dd|dt)/:user/:repo',
-      queryParamSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Packagist Downloads',
-        namedParams: {
-          interval: 'dm',
-          user: 'doctrine',
-          repo: 'orm',
-        },
-        staticPreview: this.render({
-          downloads: 1000000,
-          interval: 'dm',
-        }),
-        keywords,
-        documentation: cacheDocumentationFragment,
+  static examples = [
+    {
+      title: 'Packagist Downloads',
+      namedParams: {
+        interval: 'dm',
+        user: 'doctrine',
+        repo: 'orm',
       },
-      {
-        title: 'Packagist Downloads (custom server)',
-        namedParams: {
-          interval: 'dm',
-          user: 'doctrine',
-          repo: 'orm',
-        },
-        staticPreview: this.render({
-          downloads: 1000000,
-          interval: 'dm',
-        }),
-        queryParams: { server: 'https://packagist.org' },
-        keywords,
-        documentation:
-          customServerDocumentationFragment + cacheDocumentationFragment,
+      staticPreview: this.render({
+        downloads: 1000000,
+        interval: 'dm',
+      }),
+      keywords,
+      documentation: cacheDocumentationFragment,
+    },
+    {
+      title: 'Packagist Downloads (custom server)',
+      namedParams: {
+        interval: 'dm',
+        user: 'doctrine',
+        repo: 'orm',
       },
-    ]
-  }
+      staticPreview: this.render({
+        downloads: 1000000,
+        interval: 'dm',
+      }),
+      queryParams: { server: 'https://packagist.org' },
+      keywords,
+      documentation:
+        customServerDocumentationFragment + cacheDocumentationFragment,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'downloads',
-    }
+  static defaultBadgeData = {
+    label: 'downloads',
   }
 
   static render({ downloads, interval }) {

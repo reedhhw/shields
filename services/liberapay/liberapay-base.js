@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { colorScale } = require('../color-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { colorScale } from '../color-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   npatrons: nonNegativeInteger,
@@ -26,8 +24,7 @@ const schema = Joi.object({
     .keys({
       amount: Joi.string().required(),
     })
-    .allow(null)
-    .required(),
+    .allow(null),
 }).required()
 
 const isCurrencyOverTime = Joi.string().regex(
@@ -43,15 +40,11 @@ function renderCurrencyBadge({ label, amount, currency }) {
 }
 
 class LiberapayBase extends BaseJsonService {
-  static get category() {
-    return 'funding'
-  }
+  static category = 'funding'
 
-  static get defaultBadgeData() {
-    return {
-      label: 'liberapay',
-      namedLogo: 'liberapay',
-    }
+  static defaultBadgeData = {
+    label: 'liberapay',
+    namedLogo: 'liberapay',
   }
 
   async fetch({ entity }) {
@@ -69,8 +62,4 @@ class LiberapayBase extends BaseJsonService {
   }
 }
 
-module.exports = {
-  renderCurrencyBadge,
-  LiberapayBase,
-  isCurrencyOverTime,
-}
+export { renderCurrencyBadge, LiberapayBase, isCurrencyOverTime }

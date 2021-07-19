@@ -1,11 +1,9 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const {
+import Joi from 'joi'
+import {
   testResultQueryParamSchema,
   renderTestResultBadge,
-} = require('../test-results')
-const AzureDevOpsBase = require('./azure-devops-base')
+} from '../test-results.js'
+import AzureDevOpsBase from './azure-devops-base.js'
 
 const commonAttrs = {
   keywords: ['vso', 'vsts', 'azure-devops'],
@@ -61,104 +59,96 @@ const buildTestResultSummarySchema = Joi.object({
   }).required(),
 }).required()
 
-module.exports = class AzureDevOpsTests extends AzureDevOpsBase {
-  static get category() {
-    return 'build'
+export default class AzureDevOpsTests extends AzureDevOpsBase {
+  static category = 'build'
+
+  static route = {
+    base: 'azure-devops/tests',
+    pattern: ':organization/:project/:definitionId/:branch*',
+    queryParamSchema: testResultQueryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'azure-devops/tests',
-      pattern: ':organization/:project/:definitionId/:branch*',
-      queryParamSchema: testResultQueryParamSchema,
-    }
-  }
+  static examples = [
+    {
+      title: 'Azure DevOps tests',
+      pattern: ':organization/:project/:definitionId',
+      namedParams: {
+        organization: 'azuredevops-powershell',
+        project: 'azuredevops-powershell',
+        definitionId: '1',
+      },
+      staticPreview: this.render({
+        passed: 20,
+        failed: 1,
+        skipped: 1,
+        total: 22,
+      }),
+      ...commonAttrs,
+    },
+    {
+      title: 'Azure DevOps tests (branch)',
+      pattern: ':organization/:project/:definitionId/:branch',
+      namedParams: {
+        organization: 'azuredevops-powershell',
+        project: 'azuredevops-powershell',
+        definitionId: '1',
+        branch: 'master',
+      },
+      staticPreview: this.render({
+        passed: 20,
+        failed: 1,
+        skipped: 1,
+        total: 22,
+      }),
+      ...commonAttrs,
+    },
+    {
+      title: 'Azure DevOps tests (compact)',
+      pattern: ':organization/:project/:definitionId',
+      namedParams: {
+        organization: 'azuredevops-powershell',
+        project: 'azuredevops-powershell',
+        definitionId: '1',
+      },
+      queryParams: {
+        compact_message: null,
+      },
+      staticPreview: this.render({
+        passed: 20,
+        failed: 1,
+        skipped: 1,
+        total: 22,
+        isCompact: true,
+      }),
+      ...commonAttrs,
+    },
+    {
+      title: 'Azure DevOps tests with custom labels',
+      pattern: ':organization/:project/:definitionId',
+      namedParams: {
+        organization: 'azuredevops-powershell',
+        project: 'azuredevops-powershell',
+        definitionId: '1',
+      },
+      queryParams: {
+        passed_label: 'good',
+        failed_label: 'bad',
+        skipped_label: 'n/a',
+      },
+      staticPreview: this.render({
+        passed: 20,
+        failed: 1,
+        skipped: 1,
+        total: 22,
+        passedLabel: 'good',
+        failedLabel: 'bad',
+        skippedLabel: 'n/a',
+      }),
+      ...commonAttrs,
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Azure DevOps tests',
-        pattern: ':organization/:project/:definitionId',
-        namedParams: {
-          organization: 'azuredevops-powershell',
-          project: 'azuredevops-powershell',
-          definitionId: '1',
-        },
-        staticPreview: this.render({
-          passed: 20,
-          failed: 1,
-          skipped: 1,
-          total: 22,
-        }),
-        ...commonAttrs,
-      },
-      {
-        title: 'Azure DevOps tests (branch)',
-        pattern: ':organization/:project/:definitionId/:branch',
-        namedParams: {
-          organization: 'azuredevops-powershell',
-          project: 'azuredevops-powershell',
-          definitionId: '1',
-          branch: 'master',
-        },
-        staticPreview: this.render({
-          passed: 20,
-          failed: 1,
-          skipped: 1,
-          total: 22,
-        }),
-        ...commonAttrs,
-      },
-      {
-        title: 'Azure DevOps tests (compact)',
-        pattern: ':organization/:project/:definitionId',
-        namedParams: {
-          organization: 'azuredevops-powershell',
-          project: 'azuredevops-powershell',
-          definitionId: '1',
-        },
-        queryParams: {
-          compact_message: null,
-        },
-        staticPreview: this.render({
-          passed: 20,
-          failed: 1,
-          skipped: 1,
-          total: 22,
-          isCompact: true,
-        }),
-        ...commonAttrs,
-      },
-      {
-        title: 'Azure DevOps tests with custom labels',
-        pattern: ':organization/:project/:definitionId',
-        namedParams: {
-          organization: 'azuredevops-powershell',
-          project: 'azuredevops-powershell',
-          definitionId: '1',
-        },
-        queryParams: {
-          passed_label: 'good',
-          failed_label: 'bad',
-          skipped_label: 'n/a',
-        },
-        staticPreview: this.render({
-          passed: 20,
-          failed: 1,
-          skipped: 1,
-          total: 22,
-          passedLabel: 'good',
-          failedLabel: 'bad',
-          skippedLabel: 'n/a',
-        }),
-        ...commonAttrs,
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'tests' }
-  }
+  static defaultBadgeData = { label: 'tests' }
 
   static render({
     passed,

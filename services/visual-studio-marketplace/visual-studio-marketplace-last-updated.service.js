@@ -1,38 +1,28 @@
-'use strict'
+import { age } from '../color-formatters.js'
+import { formatDate } from '../text-formatters.js'
+import VisualStudioMarketplaceBase from './visual-studio-marketplace-base.js'
 
-const { age } = require('../color-formatters')
-const { formatDate } = require('../text-formatters')
-const VisualStudioMarketplaceBase = require('./visual-studio-marketplace-base')
+export default class VisualStudioMarketplaceLastUpdated extends VisualStudioMarketplaceBase {
+  static category = 'activity'
 
-module.exports = class VisualStudioMarketplaceLastUpdated extends VisualStudioMarketplaceBase {
-  static get category() {
-    return 'activity'
+  static route = {
+    base: '',
+    pattern:
+      '(visual-studio-marketplace|vscode-marketplace)/last-updated/:extensionId',
   }
 
-  static get route() {
-    return {
-      base: '',
-      pattern:
-        '(visual-studio-marketplace|vscode-marketplace)/last-updated/:extensionId',
-    }
-  }
+  static examples = [
+    {
+      title: 'Visual Studio Marketplace Last Updated',
+      pattern: 'visual-studio-marketplace/last-updated/:extensionId',
+      namedParams: { extensionId: 'yasht.terminal-all-in-one' },
+      staticPreview: this.render({ lastUpdated: '2019-04-13T07:50:27.000Z' }),
+      keywords: this.keywords,
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Visual Studio Marketplace Last Updated',
-        pattern: 'visual-studio-marketplace/last-updated/:extensionId',
-        namedParams: { extensionId: 'yasht.terminal-all-in-one' },
-        staticPreview: this.render({ lastUpdated: '2019-04-13T07:50:27.000Z' }),
-        keywords: this.keywords,
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'last updated',
-    }
+  static defaultBadgeData = {
+    label: 'last updated',
   }
 
   static render({ lastUpdated }) {

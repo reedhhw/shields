@@ -1,12 +1,10 @@
-'use strict'
-
-const {
+import {
   decodeDataUrlFromQueryParam,
   prepareNamedLogo,
-} = require('../../lib/logos')
-const { svg2base64 } = require('../../lib/svg-helpers')
-const coalesce = require('./coalesce')
-const toArray = require('./to-array')
+} from '../../lib/logos.js'
+import { svg2base64 } from '../../lib/svg-helpers.js'
+import coalesce from './coalesce.js'
+import toArray from './to-array.js'
 
 // Translate modern badge data to the legacy schema understood by the badge
 // maker. Allow the user to override the label, color, logo, etc. through the
@@ -34,7 +32,7 @@ const toArray = require('./to-array')
 // 3. In the case of the `social` style only, the last precedence is the
 //    service's default logo. The `logoColor` can be overridden by the query
 //    string.
-module.exports = function coalesceBadge(
+export default function coalesceBadge(
   overrides,
   serviceData,
   // These two parameters were kept separate to make tests clearer.
@@ -160,12 +158,10 @@ module.exports = function coalesceBadge(
   }
 
   return {
-    text: [
-      // Use `coalesce()` to support empty labels and messages, as in the
-      // static badge.
-      coalesce(overrideLabel, serviceLabel, defaultLabel, category),
-      coalesce(serviceMessage, 'n/a'),
-    ],
+    // Use `coalesce()` to support empty labels and messages, as in the static
+    // badge.
+    label: coalesce(overrideLabel, serviceLabel, defaultLabel, category),
+    message: coalesce(serviceMessage, 'n/a'),
     color: coalesce(
       // In case of an error, disregard user's color override.
       isError ? undefined : overrideColor,
@@ -179,7 +175,7 @@ module.exports = function coalesceBadge(
       serviceLabelColor,
       defaultLabelColor
     ),
-    template: style,
+    style,
     namedLogo,
     logo: logoSvgBase64,
     logoWidth,

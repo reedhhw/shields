@@ -1,23 +1,20 @@
-'use strict'
+import { ServiceTester } from '../tester.js'
 
-const Joi = require('@hapi/joi')
-const { isBuildStatus } = require('../build-status')
-const t = (module.exports = require('../tester').createServiceTester())
+export const t = new ServiceTester({
+  id: 'continuousphp',
+  title: 'Continuousphp',
+})
 
-t.create('build status on default branch')
+t.create('no longer available (previously build status on default branch)')
   .get('/git-hub/doctrine/dbal.json')
   .expectBadge({
-    label: 'build',
-    message: Joi.alternatives().try(isBuildStatus, Joi.equal('unknown')),
+    label: 'continuousphp',
+    message: 'no longer available',
   })
 
-t.create('build status on named branch')
+t.create('no longer available (previously build status on named branch)')
   .get('/git-hub/doctrine/dbal/develop.json')
   .expectBadge({
-    label: 'build',
-    message: Joi.alternatives().try(isBuildStatus, Joi.equal('unknown')),
+    label: 'continuousphp',
+    message: 'no longer available',
   })
-
-t.create('unknown repo')
-  .get('/git-hub/this-repo/does-not-exist.json')
-  .expectBadge({ label: 'continuousphp', message: 'project not found' })

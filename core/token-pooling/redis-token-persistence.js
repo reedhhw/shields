@@ -1,15 +1,13 @@
-'use strict'
+import { URL } from 'url'
+import Redis from 'ioredis'
+import log from '../server/log.js'
 
-const { URL } = require('url')
-const Redis = require('ioredis')
-const log = require('../server/log')
-const TokenPersistence = require('./token-persistence')
-
-module.exports = class RedisTokenPersistence extends TokenPersistence {
+export default class RedisTokenPersistence {
   constructor({ url, key }) {
-    super()
     this.url = url
     this.key = key
+    this.noteTokenAdded = this.noteTokenAdded.bind(this)
+    this.noteTokenRemoved = this.noteTokenRemoved.bind(this)
   }
 
   async initialize() {
@@ -39,5 +37,21 @@ module.exports = class RedisTokenPersistence extends TokenPersistence {
 
   async onTokenRemoved(token) {
     await this.redis.srem(this.key, token)
+  }
+
+  async noteTokenAdded(token) {
+    try {
+      await this.onTokenAdded(token)
+    } catch (e) {
+      log.error(e)
+    }
+  }
+
+  async noteTokenRemoved(token) {
+    try {
+      await this.onTokenRemoved(token)
+    } catch (e) {
+      log.error(e)
+    }
   }
 }

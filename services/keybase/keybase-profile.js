@@ -1,16 +1,11 @@
-'use strict'
+import { BaseJsonService, NotFound } from '../index.js'
 
-const { BaseJsonService } = require('..')
-const { NotFound } = require('..')
-
-module.exports = class KeybaseProfile extends BaseJsonService {
+export default class KeybaseProfile extends BaseJsonService {
   static get apiVersion() {
     throw new Error(`apiVersion() is not implemented for ${this.name}`)
   }
 
-  static get category() {
-    return 'social'
-  }
+  static category = 'social'
 
   async fetch({ schema, options }) {
     const apiVersion = this.constructor.apiVersion

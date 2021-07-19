@@ -1,10 +1,8 @@
-'use strict'
-
-const camelcase = require('camelcase')
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger, optionalUrl } = require('../validators')
-const { BaseJsonService } = require('..')
+import camelcase from 'camelcase'
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger, optionalUrl } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   topic_count: nonNegativeInteger,
@@ -18,9 +16,7 @@ const queryParamSchema = Joi.object({
 }).required()
 
 class DiscourseBase extends BaseJsonService {
-  static get category() {
-    return 'chat'
-  }
+  static category = 'chat'
 
   static buildRoute(metric) {
     return {
@@ -30,9 +26,7 @@ class DiscourseBase extends BaseJsonService {
     }
   }
 
-  static get defaultBadgeData() {
-    return { label: 'discourse' }
-  }
+  static defaultBadgeData = { label: 'discourse' }
 
   async fetch({ server }) {
     return this._requestJson({
@@ -44,28 +38,21 @@ class DiscourseBase extends BaseJsonService {
 
 function DiscourseMetricIntegrationFactory({ metricName, property }) {
   return class DiscourseMetric extends DiscourseBase {
-    static get name() {
-      // The space is needed so we get 'DiscourseTopics' rather than
-      // 'Discoursetopics'. `camelcase()` removes it.
-      return camelcase(`Discourse ${metricName}`, { pascalCase: true })
-    }
+    // The space is needed so we get 'DiscourseTopics' rather than
+    // 'Discoursetopics'. `camelcase()` removes it.
+    static name = camelcase(`Discourse ${metricName}`, { pascalCase: true })
+    static route = this.buildRoute(metricName)
 
-    static get route() {
-      return this.buildRoute(metricName)
-    }
-
-    static get examples() {
-      return [
-        {
-          title: `Discourse ${metricName}`,
-          namedParams: {},
-          queryParams: {
-            server: 'https://meta.discourse.org',
-          },
-          staticPreview: this.render({ stat: 100 }),
+    static examples = [
+      {
+        title: `Discourse ${metricName}`,
+        namedParams: {},
+        queryParams: {
+          server: 'https://meta.discourse.org',
         },
-      ]
-    }
+        staticPreview: this.render({ stat: 100 }),
+      },
+    ]
 
     static render({ stat }) {
       return {
@@ -82,22 +69,17 @@ function DiscourseMetricIntegrationFactory({ metricName, property }) {
 }
 
 class DiscourseStatus extends DiscourseBase {
-  static get route() {
-    return this.buildRoute('status')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: `Discourse status`,
-        namedParams: {},
-        queryParams: {
-          server: 'https://meta.discourse.org',
-        },
-        staticPreview: this.render(),
+  static route = this.buildRoute('status')
+  static examples = [
+    {
+      title: `Discourse status`,
+      namedParams: {},
+      queryParams: {
+        server: 'https://meta.discourse.org',
       },
-    ]
-  }
+      staticPreview: this.render(),
+    },
+  ]
 
   static render() {
     return {
@@ -121,4 +103,4 @@ const metricIntegrations = [
   { metricName: 'likes', property: 'like_count' },
 ].map(DiscourseMetricIntegrationFactory)
 
-module.exports = [...metricIntegrations, DiscourseStatus]
+export default [...metricIntegrations, DiscourseStatus]

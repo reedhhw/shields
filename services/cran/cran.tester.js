@@ -1,12 +1,10 @@
-'use strict'
+import { ServiceTester } from '../tester.js'
+import { isVPlusTripleDottedVersion } from '../test-validators.js'
 
-const { ServiceTester } = require('../tester')
-const { isVPlusTripleDottedVersion } = require('../test-validators')
-
-const t = (module.exports = new ServiceTester({
+export const t = new ServiceTester({
   id: 'cran',
   title: 'CRAN/METACRAN',
-}))
+})
 
 t.create('version (valid)').get('/v/devtools.json').expectBadge({
   label: 'cran',
@@ -19,7 +17,7 @@ t.create('version (not found)')
 
 t.create('license (valid)')
   .get('/l/devtools.json')
-  .expectBadge({ label: 'license', message: 'GPL (>= 2)' })
+  .expectBadge({ label: 'license', message: 'MIT + file LICENSE' })
 
 t.create('license (not found)')
   .get('/l/some-bogus-package.json')

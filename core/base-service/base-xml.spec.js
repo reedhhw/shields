@@ -1,24 +1,15 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { expect } = require('chai')
-const sinon = require('sinon')
-const BaseXmlService = require('./base-xml')
+import Joi from 'joi'
+import { expect } from 'chai'
+import sinon from 'sinon'
+import BaseXmlService from './base-xml.js'
 
 const dummySchema = Joi.object({
   requiredString: Joi.string().required(),
 }).required()
 
 class DummyXmlService extends BaseXmlService {
-  static get category() {
-    return 'cat'
-  }
-
-  static get route() {
-    return {
-      base: 'foo',
-    }
-  }
+  static category = 'cat'
+  static route = { base: 'foo' }
 
   async handle() {
     const { requiredString } = await this._requestXml({
@@ -57,9 +48,7 @@ describe('BaseXmlService', function () {
 
     it('forwards options to _sendAndCacheRequest', async function () {
       class WithCustomOptions extends BaseXmlService {
-        static get route() {
-          return {}
-        }
+        static route = {}
 
         async handle() {
           const { requiredString } = await this._requestXml({

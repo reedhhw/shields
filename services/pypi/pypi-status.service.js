@@ -1,32 +1,22 @@
-'use strict'
+import PypiBase from './pypi-base.js'
+import { parseClassifiers } from './pypi-helpers.js'
 
-const PypiBase = require('./pypi-base')
-const { parseClassifiers } = require('./pypi-helpers')
+export default class PypiStatus extends PypiBase {
+  static category = 'other'
 
-module.exports = class PypiStatus extends PypiBase {
-  static get category() {
-    return 'other'
-  }
+  static route = this.buildRoute('pypi/status')
 
-  static get route() {
-    return this.buildRoute('pypi/status')
-  }
+  static examples = [
+    {
+      title: 'PyPI - Status',
+      pattern: ':packageName',
+      namedParams: { packageName: 'Django' },
+      staticPreview: this.render({ status: 'stable' }),
+      keywords: ['python'],
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'PyPI - Status',
-        pattern: ':packageName',
-        namedParams: { packageName: 'Django' },
-        staticPreview: this.render({ status: 'stable' }),
-        keywords: ['python'],
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'status' }
-  }
+  static defaultBadgeData = { label: 'status' }
 
   static render({ status = '' }) {
     status = status.toLowerCase()

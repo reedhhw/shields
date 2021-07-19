@@ -4,10 +4,8 @@
 //
 // This endpoint is called from frontend/components/suggestion-and-search.js.
 
-'use strict'
-
-const { URL } = require('url')
-const request = require('request')
+import { URL } from 'url'
+import request from 'request'
 
 function twitterPage(url) {
   if (url.protocol === null) {
@@ -193,14 +191,11 @@ function setRoutes(allowedOrigin, githubApiProvider, server) {
       .then(suggestions => {
         end({ suggestions })
       })
+      // eslint-disable-next-line promise/prefer-await-to-then
       .catch(err => {
         end({ suggestions: [], err })
       })
   })
 }
 
-module.exports = {
-  findSuggestions,
-  githubLicense,
-  setRoutes,
-}
+export { findSuggestions, githubLicense, setRoutes }

@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderBuildStatusBadge } = require('../build-status')
-const { BaseJsonService, redirector } = require('..')
+import Joi from 'joi'
+import { renderBuildStatusBadge } from '../build-status.js'
+import { BaseJsonService, redirector } from '../index.js'
 
 const bitbucketPipelinesSchema = Joi.object({
   values: Joi.array()
@@ -26,34 +24,25 @@ const bitbucketPipelinesSchema = Joi.object({
 }).required()
 
 class BitbucketPipelines extends BaseJsonService {
-  static get category() {
-    return 'build'
+  static category = 'build'
+  static route = {
+    base: 'bitbucket/pipelines',
+    pattern: ':user/:repo/:branch+',
   }
 
-  static get route() {
-    return {
-      base: 'bitbucket/pipelines',
-      pattern: ':user/:repo/:branch+',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Bitbucket Pipelines',
-        namedParams: {
-          user: 'atlassian',
-          repo: 'adf-builder-javascript',
-          branch: 'task/SECO-2168',
-        },
-        staticPreview: this.render({ status: 'SUCCESSFUL' }),
+  static examples = [
+    {
+      title: 'Bitbucket Pipelines',
+      namedParams: {
+        user: 'atlassian',
+        repo: 'adf-builder-javascript',
+        branch: 'task/SECO-2168',
       },
-    ]
-  }
+      staticPreview: this.render({ status: 'SUCCESSFUL' }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'build' }
-  }
+  static defaultBadgeData = { label: 'build' }
 
   static render({ status }) {
     return renderBuildStatusBadge({ status: status.toLowerCase() })
@@ -105,7 +94,4 @@ const BitbucketPipelinesRedirector = redirector({
   dateAdded: new Date('2020-07-12'),
 })
 
-module.exports = {
-  BitbucketPipelines,
-  BitbucketPipelinesRedirector,
-}
+export { BitbucketPipelines, BitbucketPipelinesRedirector }

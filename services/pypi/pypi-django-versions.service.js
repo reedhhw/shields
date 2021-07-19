@@ -1,32 +1,22 @@
-'use strict'
+import PypiBase from './pypi-base.js'
+import { sortDjangoVersions, parseClassifiers } from './pypi-helpers.js'
 
-const PypiBase = require('./pypi-base')
-const { sortDjangoVersions, parseClassifiers } = require('./pypi-helpers')
+export default class PypiDjangoVersions extends PypiBase {
+  static category = 'platform-support'
 
-module.exports = class PypiDjangoVersions extends PypiBase {
-  static get category() {
-    return 'platform-support'
-  }
+  static route = this.buildRoute('pypi/djversions')
 
-  static get route() {
-    return this.buildRoute('pypi/djversions')
-  }
+  static examples = [
+    {
+      title: 'PyPI - Django Version',
+      pattern: ':packageName',
+      namedParams: { packageName: 'djangorestframework' },
+      staticPreview: this.render({ versions: ['1.11', '2.0', '2.1'] }),
+      keywords: ['python'],
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'PyPI - Django Version',
-        pattern: ':packageName',
-        namedParams: { packageName: 'djangorestframework' },
-        staticPreview: this.render({ versions: ['1.11', '2.0', '2.1'] }),
-        keywords: ['python'],
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'django versions' }
-  }
+  static defaultBadgeData = { label: 'django versions' }
 
   static render({ versions }) {
     if (versions.length > 0) {

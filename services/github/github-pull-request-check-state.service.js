@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const countBy = require('lodash.countby')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { fetchIssue } = require('./github-common-fetch')
-const { documentation, errorMessagesFor } = require('./github-helpers')
+import Joi from 'joi'
+import countBy from 'lodash.countby'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { fetchIssue } from './github-common-fetch.js'
+import { documentation, errorMessagesFor } from './github-helpers.js'
 
 const schema = Joi.object({
   state: Joi.equal('failure', 'pending', 'success').required(),
@@ -19,57 +17,45 @@ const schema = Joi.object({
 
 const keywords = ['pullrequest', 'detail']
 
-module.exports = class GithubPullRequestCheckState extends GithubAuthV3Service {
-  static get category() {
-    return 'build'
+export default class GithubPullRequestCheckState extends GithubAuthV3Service {
+  static category = 'build'
+  static route = {
+    base: 'github/status',
+    pattern: ':variant(s|contexts)/pulls/:user/:repo/:number(\\d+)',
   }
 
-  static get route() {
-    return {
-      base: 'github/status',
-      pattern: ':variant(s|contexts)/pulls/:user/:repo/:number(\\d+)',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub pull request check state',
-        pattern: 's/pulls/:user/:repo/:number',
-        namedParams: {
-          user: 'badges',
-          repo: 'shields',
-          number: '1110',
-        },
-        staticPreview: this.render({ variant: 's', state: 'pending' }),
-        keywords,
-        documentation,
+  static examples = [
+    {
+      title: 'GitHub pull request check state',
+      pattern: 's/pulls/:user/:repo/:number',
+      namedParams: {
+        user: 'badges',
+        repo: 'shields',
+        number: '1110',
       },
-      {
-        title: 'GitHub pull request check contexts',
-        pattern: 'contexts/pulls/:user/:repo/:number',
-        namedParams: {
-          user: 'badges',
-          repo: 'shields',
-          number: '1110',
-        },
-        staticPreview: this.render({
-          variant: 'contexts',
-          state: 'pending',
-          stateCounts: { passed: 5, pending: 1 },
-        }),
-        keywords,
-        documentation,
+      staticPreview: this.render({ variant: 's', state: 'pending' }),
+      keywords,
+      documentation,
+    },
+    {
+      title: 'GitHub pull request check contexts',
+      pattern: 'contexts/pulls/:user/:repo/:number',
+      namedParams: {
+        user: 'badges',
+        repo: 'shields',
+        number: '1110',
       },
-    ]
-  }
+      staticPreview: this.render({
+        variant: 'contexts',
+        state: 'pending',
+        stateCounts: { passed: 5, pending: 1 },
+      }),
+      keywords,
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'checks',
-      namedLogo: 'github',
-    }
-  }
+  static defaultBadgeData = { label: 'checks', namedLogo: 'github' }
 
   static render({ variant, state, stateCounts }) {
     let message

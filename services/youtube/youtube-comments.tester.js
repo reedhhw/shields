@@ -1,9 +1,9 @@
-'use strict'
-
-const t = (module.exports = require('../tester').createServiceTester())
-const { noToken } = require('../test-helpers')
-const { isMetric } = require('../test-validators')
-const noYouTubeToken = noToken(require('./youtube-comments.service'))
+import { createServiceTester } from '../tester.js'
+import { noToken } from '../test-helpers.js'
+import { isMetric } from '../test-validators.js'
+import _noYouTubeToken from './youtube-comments.service.js'
+export const t = await createServiceTester()
+const noYouTubeToken = noToken(_noYouTubeToken)
 
 t.create('video comment count')
   .skipWhen(noYouTubeToken)
@@ -12,7 +12,7 @@ t.create('video comment count')
     label: 'comments',
     message: isMetric,
     color: 'red',
-    link: ['https://www.youtube.com/watch?v=wGJHwc5ksMA'],
+    link: ['https://www.youtube.com/video/wGJHwc5ksMA'],
   })
 
 t.create('video not found')

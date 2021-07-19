@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { starRating, metric } = require('../text-formatters')
-const { colorScale } = require('../color-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { starRating, metric } from '../text-formatters.js'
+import { colorScale } from '../color-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const pkgReviewColor = colorScale([2, 3, 4])
 
@@ -13,42 +11,38 @@ const schema = Joi.object({
   reviewsCount: nonNegativeInteger,
 }).required()
 
-module.exports = class PkgreviewRating extends BaseJsonService {
-  static get category() {
-    return 'rating'
+// Repository for this service is: https://github.com/iqubex-technologies/pkgreview.dev
+// Internally the service leverages the npms.io API (https://api.npms.io/v2)
+export default class PkgreviewRating extends BaseJsonService {
+  static category = 'rating'
+
+  static route = {
+    base: 'pkgreview',
+    pattern: ':format(rating|stars)/:pkgManager(npm)/:pkgSlug+',
   }
 
-  static get route() {
-    return {
-      base: 'pkgreview',
-      pattern: ':format(rating|stars)/:pkgManager(npm)/:pkgSlug+',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'pkgreview.dev Package Ratings',
-        pattern: 'rating/:pkgManager/:pkgSlug+',
-        namedParams: { pkgManager: 'npm', pkgSlug: 'react' },
-        staticPreview: this.render({
-          format: 'rating',
-          rating: 3.5,
-          reviewsCount: 237,
-        }),
-      },
-      {
-        title: 'pkgreview.dev Star Ratings',
-        pattern: 'stars/:pkgManager/:pkgSlug+',
-        namedParams: { pkgManager: 'npm', pkgSlug: 'react' },
-        staticPreview: this.render({
-          format: 'stars',
-          rating: 1.5,
-          reviewsCount: 200,
-        }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'pkgreview.dev Package Ratings',
+      pattern: 'rating/:pkgManager/:pkgSlug+',
+      namedParams: { pkgManager: 'npm', pkgSlug: 'react' },
+      staticPreview: this.render({
+        format: 'rating',
+        rating: 3.5,
+        reviewsCount: 237,
+      }),
+    },
+    {
+      title: 'pkgreview.dev Star Ratings',
+      pattern: 'stars/:pkgManager/:pkgSlug+',
+      namedParams: { pkgManager: 'npm', pkgSlug: 'react' },
+      staticPreview: this.render({
+        format: 'stars',
+        rating: 1.5,
+        reviewsCount: 200,
+      }),
+    },
+  ]
 
   static render({ rating, reviewsCount, format }) {
     const message =
@@ -66,7 +60,7 @@ module.exports = class PkgreviewRating extends BaseJsonService {
   async fetch({ pkgManager, pkgSlug }) {
     return this._requestJson({
       schema,
-      url: `https://pkgreview.dev/api/v1/${pkgManager}/${encodeURIComponent(
+      url: `https://pkgreview.now.sh/api/v1/${pkgManager}/${encodeURIComponent(
         pkgSlug
       )}`,
       errorMessages: {

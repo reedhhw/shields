@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const KeybaseProfile = require('./keybase-profile')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import KeybaseProfile from './keybase-profile.js'
 
 const bitcoinAddressSchema = Joi.object({
   status: Joi.object({
@@ -28,32 +26,26 @@ const bitcoinAddressSchema = Joi.object({
     .max(1),
 }).required()
 
-module.exports = class KeybaseBTC extends KeybaseProfile {
-  static get route() {
-    return {
-      base: 'keybase/btc',
-      pattern: ':username',
-    }
+export default class KeybaseBTC extends KeybaseProfile {
+  static route = {
+    base: 'keybase/btc',
+    pattern: ':username',
   }
 
-  static get examples() {
-    return [
-      {
-        title: 'Keybase BTC',
-        namedParams: { username: 'skyplabs' },
-        staticPreview: this.render({
-          address: '12ufRLmbEmgjsdGzhUUFY4pcfiQZyRPV9J',
-        }),
-        keywords: ['bitcoin'],
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Keybase BTC',
+      namedParams: { username: 'skyplabs' },
+      staticPreview: this.render({
+        address: '12ufRLmbEmgjsdGzhUUFY4pcfiQZyRPV9J',
+      }),
+      keywords: ['bitcoin'],
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'btc',
-      color: 'informational',
-    }
+  static defaultBadgeData = {
+    label: 'btc',
+    color: 'informational',
   }
 
   static render({ address }) {
@@ -62,13 +54,11 @@ module.exports = class KeybaseBTC extends KeybaseProfile {
     }
   }
 
-  static get apiVersion() {
-    return '1.0'
-  }
+  static apiVersion = '1.0'
 
   async handle({ username }) {
     const options = {
-      form: {
+      qs: {
         usernames: username,
         fields: 'cryptocurrency_addresses',
       },

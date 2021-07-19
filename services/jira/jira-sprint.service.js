@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { optionalUrl } = require('../validators')
-const { BaseJsonService } = require('..')
-const { authConfig } = require('./jira-common')
+import Joi from 'joi'
+import { optionalUrl } from '../validators.js'
+import { BaseJsonService } from '../index.js'
+import { authConfig } from './jira-common.js'
 
 const queryParamSchema = Joi.object({
   baseUrl: optionalUrl.required(),
@@ -32,45 +30,35 @@ const documentation = `
 </p>
 `
 
-module.exports = class JiraSprint extends BaseJsonService {
-  static get category() {
-    return 'issue-tracking'
+export default class JiraSprint extends BaseJsonService {
+  static category = 'issue-tracking'
+
+  static route = {
+    base: 'jira/sprint',
+    pattern: ':sprintId',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'jira/sprint',
-      pattern: ':sprintId',
-      queryParamSchema,
-    }
-  }
+  static auth = authConfig
 
-  static get auth() {
-    return authConfig
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'JIRA sprint completion',
-        namedParams: {
-          sprintId: '94',
-        },
-        queryParams: {
-          baseUrl: 'https://jira.spring.io',
-        },
-        staticPreview: this.render({
-          numCompletedIssues: 27,
-          numTotalIssues: 28,
-        }),
-        documentation,
+  static examples = [
+    {
+      title: 'JIRA sprint completion',
+      namedParams: {
+        sprintId: '94',
       },
-    ]
-  }
+      queryParams: {
+        baseUrl: 'https://jira.spring.io',
+      },
+      staticPreview: this.render({
+        numCompletedIssues: 27,
+        numTotalIssues: 28,
+      }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'jira' }
-  }
+  static defaultBadgeData = { label: 'jira' }
 
   static render({ numCompletedIssues, numTotalIssues }) {
     const percentComplete = numTotalIssues
@@ -116,6 +104,7 @@ module.exports = class JiraSprint extends BaseJsonService {
       if (issue.fields.resolution != null) {
         return issue.fields.resolution.name !== 'Unresolved'
       }
+      return false
     }).length
 
     return this.constructor.render({ numTotalIssues, numCompletedIssues })

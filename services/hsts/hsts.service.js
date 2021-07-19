@@ -1,8 +1,6 @@
-'use strict'
-
+import Joi from 'joi'
+import { BaseJsonService } from '../index.js'
 const label = 'hsts preloaded'
-const Joi = require('@hapi/joi')
-const { BaseJsonService } = require('..')
 const schema = Joi.object({
   status: Joi.string().required(),
 }).required()
@@ -21,29 +19,23 @@ const documentation = `
 </p>
 `
 
-module.exports = class HSTS extends BaseJsonService {
-  static get category() {
-    return 'monitoring'
+export default class HSTS extends BaseJsonService {
+  static category = 'monitoring'
+
+  static route = {
+    base: 'hsts/preload',
+    pattern: ':domain',
   }
 
-  static get route() {
-    return {
-      base: 'hsts/preload',
-      pattern: ':domain',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Chromium HSTS preload',
-        namedParams: { domain: 'github.com' },
-        staticPreview: this.render({ status: 'preloaded' }),
-        keywords: ['security'],
-        documentation,
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Chromium HSTS preload',
+      namedParams: { domain: 'github.com' },
+      staticPreview: this.render({ status: 'preloaded' }),
+      keywords: ['security'],
+      documentation,
+    },
+  ]
 
   static render({ status }) {
     let color = 'red'

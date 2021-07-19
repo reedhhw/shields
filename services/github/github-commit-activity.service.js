@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { errorMessagesFor, documentation } = require('./github-helpers')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { errorMessagesFor, documentation } from './github-helpers.js'
 
 const schema = Joi.array()
   .items(
@@ -14,38 +12,26 @@ const schema = Joi.array()
   )
   .required()
 
-module.exports = class GithubCommitActivity extends GithubAuthV3Service {
-  static get category() {
-    return 'activity'
+export default class GithubCommitActivity extends GithubAuthV3Service {
+  static category = 'activity'
+  static route = {
+    base: 'github/commit-activity',
+    pattern: ':interval(y|m|4w|w)/:user/:repo',
   }
 
-  static get route() {
-    return {
-      base: 'github/commit-activity',
-      pattern: ':interval(y|m|4w|w)/:user/:repo',
-    }
-  }
+  static examples = [
+    {
+      title: 'GitHub commit activity',
+      // Override the pattern to omit the deprecated interval "4w".
+      pattern: ':interval(y|m|w)/:user/:repo',
+      namedParams: { interval: 'm', user: 'eslint', repo: 'eslint' },
+      staticPreview: this.render({ interval: 'm', commitCount: 457 }),
+      keywords: ['commits'],
+      documentation,
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'GitHub commit activity',
-        // Override the pattern to omit the deprecated interval "4w".
-        pattern: ':interval(y|m|w)/:user/:repo',
-        namedParams: { interval: 'm', user: 'eslint', repo: 'eslint' },
-        staticPreview: this.render({ interval: 'm', commitCount: 457 }),
-        keywords: ['commits'],
-        documentation,
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'commit activity',
-      color: 'blue',
-    }
-  }
+  static defaultBadgeData = { label: 'commit activity', color: 'blue' }
 
   static render({ interval, commitCount }) {
     const intervalLabel = {

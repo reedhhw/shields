@@ -1,26 +1,20 @@
-'use strict'
+import { InvalidResponse } from '../index.js'
+import { renderCurrencyBadge, LiberapayBase } from './liberapay-base.js'
 
-const { InvalidResponse } = require('..')
-const { renderCurrencyBadge, LiberapayBase } = require('./liberapay-base')
+export default class LiberapayReceives extends LiberapayBase {
+  static route = this.buildRoute('receives')
 
-module.exports = class LiberapayReceives extends LiberapayBase {
-  static get route() {
-    return this.buildRoute('receives')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Liberapay receiving',
-        namedParams: { entity: 'Changaco' },
-        staticPreview: renderCurrencyBadge({
-          label: 'receives',
-          amount: '98.32',
-          currency: 'EUR',
-        }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Liberapay receiving',
+      namedParams: { entity: 'Changaco' },
+      staticPreview: renderCurrencyBadge({
+        label: 'receives',
+        amount: '98.32',
+        currency: 'EUR',
+      }),
+    },
+  ]
 
   async handle({ entity }) {
     const data = await this.fetch({ entity })

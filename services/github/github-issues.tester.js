@@ -1,8 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { isMetric, isMetricOpenIssues } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import Joi from 'joi'
+import { isMetric, isMetricOpenIssues } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('GitHub closed pull requests')
   .get('/issues-pr-closed/badges/shields.json')
@@ -82,9 +81,9 @@ t.create('GitHub open issues by label (raw)')
 
 // https://github.com/badges/shields/issues/1870
 t.create('GitHub open issues by label including slash character (raw)')
-  .get('/issues-raw/IgorNovozhilov/ndk/@ndk/cfg.json')
+  .get('/issues-raw/calebcartwright/shields-service-test-target/@foo/bar.json')
   .expectBadge({
-    label: 'open @ndk/cfg issues',
+    label: 'open @foo/bar issues',
     // Not always > 0.
     message: Joi.alternatives(isMetric, Joi.equal('0')),
   })

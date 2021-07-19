@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { documentation, errorMessagesFor } = require('./github-helpers')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { documentation, errorMessagesFor } from './github-helpers.js'
 
 const schema = Joi.array()
   .items(
@@ -13,42 +11,33 @@ const schema = Joi.array()
   )
   .required()
 
-module.exports = class GithubMilestone extends GithubAuthV3Service {
-  static get category() {
-    return 'issue-tracking'
+export default class GithubMilestone extends GithubAuthV3Service {
+  static category = 'issue-tracking'
+  static route = {
+    base: 'github/milestones',
+    pattern: ':variant(open|closed|all)/:user/:repo',
   }
 
-  static get route() {
-    return {
-      base: 'github/milestones',
-      pattern: ':variant(open|closed|all)/:user/:repo',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub milestones',
-        namedParams: {
-          user: 'badges',
-          repo: 'shields',
-          variant: 'open',
-        },
-        staticPreview: {
-          label: 'milestones',
-          message: '2',
-          color: 'red',
-        },
-        documentation,
+  static examples = [
+    {
+      title: 'GitHub milestones',
+      namedParams: {
+        user: 'badges',
+        repo: 'shields',
+        variant: 'open',
       },
-    ]
-  }
+      staticPreview: {
+        label: 'milestones',
+        message: '2',
+        color: 'red',
+      },
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'milestones',
-      color: 'informational',
-    }
+  static defaultBadgeData = {
+    label: 'milestones',
+    color: 'informational',
   }
 
   static render({ user, repo, variant, milestones }) {
@@ -74,7 +63,6 @@ module.exports = class GithubMilestone extends GithubAuthV3Service {
       label: `${label} milestones`,
       message: metric(milestoneLength),
       color,
-      link: [`https://github.com/${user}/${repo}/milestones`],
     }
   }
 

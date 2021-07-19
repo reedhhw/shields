@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { InvalidResponse } = require('..')
-const { errorMessagesFor } = require('./github-helpers')
+import Joi from 'joi'
+import { InvalidResponse } from '../index.js'
+import { errorMessagesFor } from './github-helpers.js'
 
 const issueSchema = Joi.object({
   head: Joi.object({
@@ -55,7 +53,7 @@ async function fetchRepoContent(
 
 async function fetchJsonFromRepo(
   serviceInstance,
-  { schema, user, repo, branch = 'master', filename }
+  { schema, user, repo, branch = 'HEAD', filename }
 ) {
   if (serviceInstance.staticAuthConfigured) {
     const buffer = await fetchRepoContent(serviceInstance, {
@@ -77,8 +75,4 @@ async function fetchJsonFromRepo(
   }
 }
 
-module.exports = {
-  fetchIssue,
-  fetchRepoContent,
-  fetchJsonFromRepo,
-}
+export { fetchIssue, fetchRepoContent, fetchJsonFromRepo }

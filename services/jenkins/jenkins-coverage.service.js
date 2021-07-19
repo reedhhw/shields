@@ -1,13 +1,11 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { coveragePercentage } = require('../color-formatters')
-const JenkinsBase = require('./jenkins-base')
-const {
+import Joi from 'joi'
+import { coveragePercentage } from '../color-formatters.js'
+import JenkinsBase from './jenkins-base.js'
+import {
   buildTreeParamQueryString,
   buildUrl,
   queryParamSchema,
-} = require('./jenkins-common')
+} from './jenkins-common.js'
 
 const formatMap = {
   jacoco: {
@@ -81,39 +79,31 @@ const documentation = `
 </p>
 `
 
-module.exports = class JenkinsCoverage extends JenkinsBase {
-  static get category() {
-    return 'coverage'
+export default class JenkinsCoverage extends JenkinsBase {
+  static category = 'coverage'
+
+  static route = {
+    base: 'jenkins/coverage',
+    pattern: ':format(jacoco|cobertura|api)',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'jenkins/coverage',
-      pattern: ':format(jacoco|cobertura|api)',
-      queryParamSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Jenkins Coverage',
-        namedParams: {
-          format: 'cobertura',
-        },
-        queryParams: {
-          jobUrl: 'https://jenkins.sqlalchemy.org/job/alembic_coverage',
-        },
-        keywords: ['jacoco', 'cobertura', 'llvm-cov', 'istanbul'],
-        staticPreview: this.render({ coverage: 95 }),
-        documentation,
+  static examples = [
+    {
+      title: 'Jenkins Coverage',
+      namedParams: {
+        format: 'cobertura',
       },
-    ]
-  }
+      queryParams: {
+        jobUrl: 'https://jenkins.sqlalchemy.org/job/alembic_coverage',
+      },
+      keywords: ['jacoco', 'cobertura', 'llvm-cov', 'istanbul'],
+      staticPreview: this.render({ coverage: 95 }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'coverage' }
-  }
+  static defaultBadgeData = { label: 'coverage' }
 
   static render({ coverage }) {
     return {
@@ -123,9 +113,8 @@ module.exports = class JenkinsCoverage extends JenkinsBase {
   }
 
   async handle({ format }, { jobUrl, disableStrictSSL }) {
-    const { schema, transform, treeQueryParam, pluginSpecificPath } = formatMap[
-      format
-    ]
+    const { schema, transform, treeQueryParam, pluginSpecificPath } =
+      formatMap[format]
     const json = await this.fetch({
       url: buildUrl({ jobUrl, plugin: pluginSpecificPath }),
       schema,

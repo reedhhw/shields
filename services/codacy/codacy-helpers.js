@@ -1,7 +1,5 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
+import Joi from 'joi'
 
 const codacyGrade = Joi.equal('A', 'B', 'C', 'D', 'E', 'F')
 
-module.exports = { codacyGrade }
+export { codacyGrade }

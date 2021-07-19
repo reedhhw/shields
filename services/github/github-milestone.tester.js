@@ -1,14 +1,12 @@
-'use strict'
-
-const { isMetric } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import { isMetric } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('All Milestones')
   .get('/all/MacroPower/milestone-test.json')
   .expectBadge({
     label: 'milestones',
     message: isMetric,
-    link: [`https://github.com/MacroPower/milestone-test/milestones`],
   })
 
 t.create('Open Milestones')
@@ -16,7 +14,6 @@ t.create('Open Milestones')
   .expectBadge({
     label: 'active milestones',
     message: isMetric,
-    link: [`https://github.com/MacroPower/milestone-test/milestones`],
   })
 
 t.create('Closed Milestones')
@@ -24,7 +21,6 @@ t.create('Closed Milestones')
   .expectBadge({
     label: 'completed milestones',
     message: isMetric,
-    link: [`https://github.com/MacroPower/milestone-test/milestones`],
   })
 
 t.create('Milestones (repo not found)')

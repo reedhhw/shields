@@ -1,23 +1,17 @@
-'use strict'
+import { colorScale } from '../color-formatters.js'
+import { InvalidResponse } from '../index.js'
+import { LiberapayBase } from './liberapay-base.js'
 
-const { colorScale } = require('../color-formatters')
-const { InvalidResponse } = require('..')
-const { LiberapayBase } = require('./liberapay-base')
+export default class LiberapayGoal extends LiberapayBase {
+  static route = this.buildRoute('goal')
 
-module.exports = class LiberapayGoal extends LiberapayBase {
-  static get route() {
-    return this.buildRoute('goal')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Liberapay goal progress',
-        namedParams: { entity: 'Changaco' },
-        staticPreview: this.render({ percentAchieved: 33 }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Liberapay goal progress',
+      namedParams: { entity: 'Changaco' },
+      staticPreview: this.render({ percentAchieved: 33 }),
+    },
+  ]
 
   static render({ percentAchieved }) {
     return {

@@ -1,36 +1,23 @@
-'use strict'
+import { BaseJsonService } from '../index.js'
+import { dockerBlue, buildDockerUrl } from './docker-helpers.js'
+import { fetchBuild } from './docker-cloud-common-fetch.js'
 
-const { BaseJsonService } = require('..')
-const { dockerBlue, buildDockerUrl } = require('./docker-helpers')
-const { fetchBuild } = require('./docker-cloud-common-fetch')
-
-module.exports = class DockerCloudBuild extends BaseJsonService {
-  static get category() {
-    return 'build'
-  }
-
-  static get route() {
-    return buildDockerUrl('cloud/build')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Docker Cloud Build Status',
-        documentation:
-          '<p>For the new Docker Hub (https://cloud.docker.com)</p>',
-        namedParams: {
-          user: 'jrottenberg',
-          repo: 'ffmpeg',
-        },
-        staticPreview: this.render({ state: 'Success' }),
+export default class DockerCloudBuild extends BaseJsonService {
+  static category = 'build'
+  static route = buildDockerUrl('cloud/build')
+  static examples = [
+    {
+      title: 'Docker Cloud Build Status',
+      documentation: '<p>For the new Docker Hub (https://cloud.docker.com)</p>',
+      namedParams: {
+        user: 'jrottenberg',
+        repo: 'ffmpeg',
       },
-    ]
-  }
+      staticPreview: this.render({ state: 'Success' }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'docker build' }
-  }
+  static defaultBadgeData = { label: 'docker build' }
 
   static render({ state }) {
     if (state === 'Success') {

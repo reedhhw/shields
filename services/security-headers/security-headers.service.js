@@ -1,11 +1,10 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { optionalUrl } = require('../validators')
-const { BaseService, NotFound } = require('..')
+import Joi from 'joi'
+import { optionalUrl } from '../validators.js'
+import { BaseService, NotFound } from '../index.js'
 
 const queryParamSchema = Joi.object({
   url: optionalUrl.required(),
+  ignoreRedirects: Joi.equal(''),
 }).required()
 
 const documentation = `
@@ -19,37 +18,38 @@ const documentation = `
 <p>
 `
 
-module.exports = class SecurityHeaders extends BaseService {
-  static get category() {
-    return 'monitoring'
+export default class SecurityHeaders extends BaseService {
+  static category = 'monitoring'
+
+  static route = {
+    base: '',
+    pattern: 'security-headers',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: '',
-      pattern: 'security-headers',
-      queryParamSchema,
-    }
-  }
+  static examples = [
+    {
+      title: 'Security Headers',
+      namedParams: {},
+      queryParams: { url: 'https://shields.io' },
+      staticPreview: this.render({
+        grade: 'A+',
+      }),
+      documentation,
+    },
+    {
+      title: "Security Headers (Don't follow redirects)",
+      namedParams: {},
+      queryParams: { url: 'https://www.shields.io', ignoreRedirects: null },
+      staticPreview: this.render({
+        grade: 'R',
+      }),
+      documentation,
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Security Headers',
-        namedParams: {},
-        queryParams: { url: 'https://shields.io' },
-        staticPreview: this.render({
-          grade: 'A+',
-        }),
-        documentation,
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'security headers',
-    }
+  static defaultBadgeData = {
+    label: 'security headers',
   }
 
   static render({ grade }) {
@@ -61,6 +61,7 @@ module.exports = class SecurityHeaders extends BaseService {
       D: 'orange',
       E: 'orange',
       F: 'red',
+      R: 'blue',
     }
 
     return {
@@ -69,7 +70,7 @@ module.exports = class SecurityHeaders extends BaseService {
     }
   }
 
-  async handle(namedParams, { url }) {
+  async handle(namedParams, { url, ignoreRedirects }) {
     const { res } = await this._request({
       url: `https://securityheaders.com`,
       options: {
@@ -77,7 +78,7 @@ module.exports = class SecurityHeaders extends BaseService {
         qs: {
           q: url,
           hide: 'on',
-          followRedirects: 'on',
+          followRedirects: ignoreRedirects !== undefined ? null : 'on',
         },
       },
     })

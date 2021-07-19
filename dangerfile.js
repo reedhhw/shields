@@ -111,10 +111,7 @@ if (allFiles.length > 100) {
 
     // eslint-disable-next-line promise/prefer-await-to-then
     danger.git.diffForFile(file).then(({ diff }) => {
-      if (
-        (diff.includes('authHelper') || diff.includes('serverSecrets')) &&
-        !secretsDocs.modified
-      ) {
+      if (diff.includes('authHelper') && !secretsDocs.modified) {
         warn(
           [
             `:books: Remember to ensure any changes to \`config.private\` `,
@@ -134,11 +131,11 @@ if (allFiles.length > 100) {
         )
       }
 
-      if (diff.includes("require('joi')")) {
+      if (diff.includes("from '@hapi/joi'")) {
         fail(
           [
-            `Found import of 'joi' in \`${file}\`. <br>`,
-            "Joi must be imported as '@hapi/joi'.",
+            `Found import of '@hapi/joi' in \`${file}\`. <br>`,
+            "Joi must be imported as 'joi'.",
           ].join('')
         )
       }

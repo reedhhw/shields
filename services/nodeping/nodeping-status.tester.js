@@ -1,14 +1,10 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const t = (module.exports = require('../tester').createServiceTester())
+import Joi from 'joi'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('NodePing status')
   .get('/jkiwn052-ntpp-4lbb-8d45-ihew6d9ucoei.json')
-  .expectBadge({
-    label: 'Status',
-    message: Joi.equal('up', 'down').required(),
-  })
+  .expectBadge({ label: 'status', message: Joi.equal('up', 'down').required() })
 
 t.create('NodePing status - up')
   .get('/jkiwn052-ntpp-4lbb-8d45-ihew6d9ucoei.json')
@@ -19,10 +15,7 @@ t.create('NodePing status - up')
       )
       .reply(200, [{ su: true }])
   )
-  .expectBadge({
-    label: 'Status',
-    message: 'up',
-  })
+  .expectBadge({ label: 'status', message: 'up' })
 
 t.create('NodePing status - down')
   .get('/jkiwn052-ntpp-4lbb-8d45-ihew6d9ucoei.json')
@@ -33,10 +26,7 @@ t.create('NodePing status - down')
       )
       .reply(200, [{ su: false }])
   )
-  .expectBadge({
-    label: 'Status',
-    message: 'down',
-  })
+  .expectBadge({ label: 'status', message: 'down' })
 
 t.create('NodePing status - custom up color/message')
   .get(
@@ -49,11 +39,7 @@ t.create('NodePing status - custom up color/message')
       )
       .reply(200, [{ su: true }])
   )
-  .expectBadge({
-    label: 'Status',
-    message: 'happy',
-    color: 'blue',
-  })
+  .expectBadge({ label: 'status', message: 'happy', color: 'blue' })
 
 t.create('NodePing status - custom down color/message')
   .get(
@@ -66,8 +52,4 @@ t.create('NodePing status - custom down color/message')
       )
       .reply(200, [{ su: false }])
   )
-  .expectBadge({
-    label: 'Status',
-    message: 'sad',
-    color: 'yellow',
-  })
+  .expectBadge({ label: 'status', message: 'sad', color: 'yellow' })

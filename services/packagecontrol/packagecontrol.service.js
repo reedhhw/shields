@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { downloadCount } = require('../color-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { downloadCount } from '../color-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const keywords = ['sublime', 'sublimetext', 'packagecontrol']
 
@@ -80,32 +78,22 @@ function DownloadsForInterval(interval) {
   }[interval]
 
   return class PackageControlDownloads extends BaseJsonService {
-    static get name() {
-      return name
-    }
+    static name = name
 
-    static get category() {
-      return 'downloads'
-    }
+    static category = 'downloads'
 
-    static get route() {
-      return { base, pattern: ':packageName' }
-    }
+    static route = { base, pattern: ':packageName' }
 
-    static get examples() {
-      return [
-        {
-          title: 'Package Control',
-          namedParams: { packageName: 'GitGutter' },
-          staticPreview: this.render({ downloads: 12000 }),
-          keywords,
-        },
-      ]
-    }
+    static examples = [
+      {
+        title: 'Package Control',
+        namedParams: { packageName: 'GitGutter' },
+        staticPreview: this.render({ downloads: 12000 }),
+        keywords,
+      },
+    ]
 
-    static get defaultBadgeData() {
-      return { label: 'downloads' }
-    }
+    static defaultBadgeData = { label: 'downloads' }
 
     static render({ downloads }) {
       return {
@@ -126,4 +114,4 @@ function DownloadsForInterval(interval) {
   }
 }
 
-module.exports = ['day', 'week', 'month', 'total'].map(DownloadsForInterval)
+export default ['day', 'week', 'month', 'total'].map(DownloadsForInterval)

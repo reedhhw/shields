@@ -1,23 +1,17 @@
-'use strict'
+import { metric } from '../text-formatters.js'
+import { colorScale } from '../color-formatters.js'
+import { LiberapayBase } from './liberapay-base.js'
 
-const { metric } = require('../text-formatters')
-const { colorScale } = require('../color-formatters')
-const { LiberapayBase } = require('./liberapay-base')
+export default class LiberapayPatrons extends LiberapayBase {
+  static route = this.buildRoute('patrons')
 
-module.exports = class LiberapayPatrons extends LiberapayBase {
-  static get route() {
-    return this.buildRoute('patrons')
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Liberapay patrons',
-        namedParams: { entity: 'Changaco' },
-        staticPreview: this.render({ patrons: 10 }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Liberapay patrons',
+      namedParams: { entity: 'Changaco' },
+      staticPreview: this.render({ patrons: 10 }),
+    },
+  ]
 
   static render({ patrons }) {
     return {

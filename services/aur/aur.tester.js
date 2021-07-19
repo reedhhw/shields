@@ -1,16 +1,14 @@
-'use strict'
-
-const { ServiceTester } = require('../tester')
-const {
+import { ServiceTester } from '../tester.js'
+import {
   isVPlusDottedVersionNClausesWithOptionalSuffix,
   isMetric,
-} = require('../test-validators')
-const { isFormattedDate } = require('../test-validators')
+  isFormattedDate,
+} from '../test-validators.js'
 
-const t = (module.exports = new ServiceTester({
+export const t = new ServiceTester({
   id: 'aur',
   title: 'Arch Linux AUR',
-}))
+})
 
 // version tests
 
@@ -20,14 +18,6 @@ t.create('version (valid)')
     label: 'aur',
     message: isVPlusDottedVersionNClausesWithOptionalSuffix,
     color: 'blue',
-  })
-
-t.create('version (valid, out of date)')
-  .get('/version/gog-gemini-rue.json')
-  .expectBadge({
-    label: 'aur',
-    message: isVPlusDottedVersionNClausesWithOptionalSuffix,
-    color: 'orange',
   })
 
 t.create('version (not found)')

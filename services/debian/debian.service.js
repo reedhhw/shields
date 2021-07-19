@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { latest, renderVersionBadge } = require('../version')
-const { BaseJsonService, NotFound, InvalidResponse } = require('..')
+import Joi from 'joi'
+import { latest, renderVersionBadge } from '../version.js'
+import { BaseJsonService, NotFound, InvalidResponse } from '../index.js'
 
 const schema = Joi.array()
   .items(
@@ -18,31 +16,22 @@ const schema = Joi.array()
 
 const defaultDistribution = 'stable'
 
-module.exports = class Debian extends BaseJsonService {
-  static get category() {
-    return 'version'
+export default class Debian extends BaseJsonService {
+  static category = 'version'
+  static route = {
+    base: 'debian/v',
+    pattern: ':packageName/:distribution?',
   }
 
-  static get route() {
-    return {
-      base: 'debian/v',
-      pattern: ':packageName/:distribution?',
-    }
-  }
+  static examples = [
+    {
+      title: 'Debian package',
+      namedParams: { packageName: 'apt', distribution: 'unstable' },
+      staticPreview: renderVersionBadge({ version: '1.8.0' }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Debian package',
-        namedParams: { packageName: 'apt', distribution: 'unstable' },
-        staticPreview: renderVersionBadge({ version: '1.8.0' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'debian' }
-  }
+  static defaultBadgeData = { label: 'debian' }
 
   async handle({ packageName, distribution = defaultDistribution }) {
     const data = await this._requestJson({

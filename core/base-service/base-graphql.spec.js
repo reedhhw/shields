@@ -1,26 +1,17 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { expect } = require('chai')
-const gql = require('graphql-tag')
-const sinon = require('sinon')
-const BaseGraphqlService = require('./base-graphql')
-const { InvalidResponse } = require('./errors')
+import Joi from 'joi'
+import { expect } from 'chai'
+import gql from 'graphql-tag'
+import sinon from 'sinon'
+import BaseGraphqlService from './base-graphql.js'
+import { InvalidResponse } from './errors.js'
 
 const dummySchema = Joi.object({
   requiredString: Joi.string().required(),
 }).required()
 
 class DummyGraphqlService extends BaseGraphqlService {
-  static get category() {
-    return 'cat'
-  }
-
-  static get route() {
-    return {
-      base: 'foo',
-    }
-  }
+  static category = 'cat'
+  static route = { base: 'foo' }
 
   async handle() {
     const { requiredString } = await this._requestGraphql({

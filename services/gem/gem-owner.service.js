@@ -1,37 +1,22 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { floorCount: floorCountColor } = require('../color-formatters')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { floorCount as floorCountColor } from '../color-formatters.js'
+import { BaseJsonService } from '../index.js'
 
 const ownerSchema = Joi.array().required()
 
-module.exports = class GemOwner extends BaseJsonService {
-  static get category() {
-    return 'other'
-  }
+export default class GemOwner extends BaseJsonService {
+  static category = 'other'
+  static route = { base: 'gem/u', pattern: ':user' }
+  static examples = [
+    {
+      title: 'Gems',
+      namedParams: { user: 'raphink' },
+      staticPreview: this.render({ count: 34 }),
+      keywords: ['ruby'],
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'gem/u',
-      pattern: ':user',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Gems',
-        namedParams: { user: 'raphink' },
-        staticPreview: this.render({ count: 34 }),
-        keywords: ['ruby'],
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'gems' }
-  }
+  static defaultBadgeData = { label: 'gems' }
 
   static render({ count }) {
     return {

@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { optionalUrl } = require('../validators')
-const { isDependencyMap } = require('../package-json-helpers')
-const { BaseJsonService, InvalidResponse, NotFound } = require('..')
+import Joi from 'joi'
+import { optionalUrl } from '../validators.js'
+import { isDependencyMap } from '../package-json-helpers.js'
+import { BaseJsonService, InvalidResponse, NotFound } from '../index.js'
 
 const deprecatedLicenseObjectSchema = Joi.object({
   type: Joi.string().required(),
@@ -32,15 +30,16 @@ const packageDataSchema = Joi.object({
   files: Joi.array().items(Joi.string()).default([]),
 }).required()
 
-const queryParamSchema = Joi.object({
+export const queryParamSchema = Joi.object({
   registry_uri: optionalUrl,
 }).required()
 
 // Abstract class for NPM badges which display data about the latest version
 // of a package.
-module.exports = class NpmBase extends BaseJsonService {
-  static get auth() {
-    return { passKey: 'npm_token', serviceKey: 'npm' }
+export default class NpmBase extends BaseJsonService {
+  static auth = {
+    passKey: 'npm_token',
+    serviceKey: 'npm',
   }
 
   static buildRoute(base, { withTag } = {}) {
@@ -142,5 +141,3 @@ module.exports = class NpmBase extends BaseJsonService {
     return this.constructor._validate(packageData, packageDataSchema)
   }
 }
-
-module.exports.queryParamSchema = queryParamSchema

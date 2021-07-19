@@ -1,23 +1,22 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const chai = require('chai')
-const { expect } = chai
-const sinon = require('sinon')
-const prometheus = require('prom-client')
-const PrometheusMetrics = require('../server/prometheus-metrics')
-const trace = require('./trace')
-const {
+import Joi from 'joi'
+import chai from 'chai'
+import sinon from 'sinon'
+import prometheus from 'prom-client'
+import chaiAsPromised from 'chai-as-promised'
+import PrometheusMetrics from '../server/prometheus-metrics.js'
+import trace from './trace.js'
+import {
   NotFound,
   Inaccessible,
   InvalidResponse,
   InvalidParameter,
   Deprecated,
-} = require('./errors')
-const BaseService = require('./base')
-const { MetricHelper, MetricNames } = require('./metric-helper')
-require('../register-chai-plugins.spec')
-chai.use(require('chai-as-promised'))
+} from './errors.js'
+import BaseService from './base.js'
+import { MetricHelper, MetricNames } from './metric-helper.js'
+import '../register-chai-plugins.spec.js'
+const { expect } = chai
+chai.use(chaiAsPromised)
 
 const queryParamSchema = Joi.object({
   queryParamA: Joi.string(),
@@ -29,32 +28,19 @@ const queryParamSchema = Joi.object({
   .required()
 
 class DummyService extends BaseService {
-  static get category() {
-    return 'other'
-  }
+  static category = 'other'
+  static route = { base: 'foo', pattern: ':namedParamA', queryParamSchema }
 
-  static get route() {
-    return {
-      base: 'foo',
-      pattern: ':namedParamA',
-      queryParamSchema,
-    }
-  }
+  static examples = [
+    {
+      pattern: ':world',
+      namedParams: { world: 'World' },
+      staticPreview: this.render({ namedParamA: 'foo', queryParamA: 'bar' }),
+      keywords: ['hello'],
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        pattern: ':world',
-        namedParams: { world: 'World' },
-        staticPreview: this.render({ namedParamA: 'foo', queryParamA: 'bar' }),
-        keywords: ['hello'],
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'cat', namedLogo: 'appveyor' }
-  }
+  static defaultBadgeData = { label: 'cat', namedLogo: 'appveyor' }
 
   static render({ namedParamA, queryParamA }) {
     return {
@@ -68,9 +54,7 @@ class DummyService extends BaseService {
 }
 
 class DummyServiceWithServiceResponseSizeMetricEnabled extends DummyService {
-  static get enabledMetrics() {
-    return [MetricNames.SERVICE_RESPONSE_SIZE]
-  }
+  static enabledMetrics = [MetricNames.SERVICE_RESPONSE_SIZE]
 }
 
 describe('BaseService', function () {
@@ -124,9 +108,7 @@ describe('BaseService', function () {
     })
 
     class WithRoute extends BaseService {
-      static get route() {
-        return {}
-      }
+      static route = {}
     }
     it('Should throw if handle() is not overridden', function () {
       return expect(WithRoute.invoke({}, {}, {})).to.be.rejectedWith(
@@ -346,7 +328,7 @@ describe('BaseService', function () {
   describe('ScoutCamp integration', function () {
     // TODO Strangly, without the useless escape the regexes do not match in Node 12.
     // eslint-disable-next-line no-useless-escape
-    const expectedRouteRegex = /^\/foo\/([^\/]+?)(|\.svg|\.json)$/
+    const expectedRouteRegex = /^\/foo(?:\/([^\/#\?]+?))(|\.svg|\.json)$/
 
     let mockCamp
     let mockHandleRequest
@@ -370,10 +352,8 @@ describe('BaseService', function () {
     it('handles the request', async function () {
       expect(mockHandleRequest).to.have.been.calledOnce
 
-      const {
-        queryParams: serviceQueryParams,
-        handler: requestHandler,
-      } = mockHandleRequest.getCall(0).args[1]
+      const { queryParams: serviceQueryParams, handler: requestHandler } =
+        mockHandleRequest.getCall(0).args[1]
       expect(serviceQueryParams).to.deep.equal([
         'queryParamA',
         'legacyQueryParamA',
@@ -390,9 +370,10 @@ describe('BaseService', function () {
       const expectedFormat = 'svg'
       expect(mockSendBadge).to.have.been.calledOnce
       expect(mockSendBadge).to.have.been.calledWith(expectedFormat, {
-        text: ['cat', 'Hello namedParamA: bar with queryParamA: ?'],
+        label: 'cat',
+        message: 'Hello namedParamA: bar with queryParamA: ?',
         color: 'lightgrey',
-        template: 'flat',
+        style: 'flat',
         namedLogo: undefined,
         logo: undefined,
         logoWidth: undefined,
@@ -406,13 +387,8 @@ describe('BaseService', function () {
 
   describe('getDefinition', function () {
     it('returns the expected result', function () {
-      const {
-        category,
-        name,
-        isDeprecated,
-        route,
-        examples,
-      } = DummyService.getDefinition()
+      const { category, name, isDeprecated, route, examples } =
+        DummyService.getDefinition()
       expect({
         category,
         name,
@@ -479,9 +455,7 @@ describe('BaseService', function () {
         'fetch',
         sinon.match.string,
         'Request',
-        url,
-        '\n',
-        options
+        `${url}\n${JSON.stringify(options, null, 2)}`
       )
       expect(trace.logTrace).to.be.calledWithMatch(
         'fetch',
@@ -528,14 +502,15 @@ describe('BaseService', function () {
         buffer: 'x'.repeat(65536 + 1),
         res: { statusCode: 200 },
       })
-      const serviceInstance = new DummyServiceWithServiceResponseSizeMetricEnabled(
-        { sendAndCacheRequest, metricHelper },
-        defaultConfig
-      )
+      const serviceInstance =
+        new DummyServiceWithServiceResponseSizeMetricEnabled(
+          { sendAndCacheRequest, metricHelper },
+          defaultConfig
+        )
 
       await serviceInstance._request({ url })
 
-      expect(register.getSingleMetricAsString('service_response_bytes'))
+      expect(await register.getSingleMetricAsString('service_response_bytes'))
         .to.contain(
           'service_response_bytes_bucket{le="65536",category="other",family="undefined",service="dummy_service_with_service_response_size_metric_enabled"} 0\n'
         )
@@ -561,18 +536,16 @@ describe('BaseService', function () {
       await serviceInstance._request({ url })
 
       expect(
-        register.getSingleMetricAsString('service_response_bytes')
+        await register.getSingleMetricAsString('service_response_bytes')
       ).to.not.contain('service_response_bytes_bucket')
     })
   })
   describe('auth', function () {
     class AuthService extends DummyService {
-      static get auth() {
-        return {
-          passKey: 'myci_pass',
-          serviceKey: 'myci',
-          isRequired: true,
-        }
+      static auth = {
+        passKey: 'myci_pass',
+        serviceKey: 'myci',
+        isRequired: true,
       }
 
       async handle() {

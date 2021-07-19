@@ -1,45 +1,34 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderContributorBadge } = require('../contributor-count')
-const { ConditionalGithubAuthV3Service } = require('./github-auth-service')
-const { fetchJsonFromRepo } = require('./github-common-fetch')
-const { documentation } = require('./github-helpers')
+import Joi from 'joi'
+import { renderContributorBadge } from '../contributor-count.js'
+import { ConditionalGithubAuthV3Service } from './github-auth-service.js'
+import { fetchJsonFromRepo } from './github-common-fetch.js'
+import { documentation } from './github-helpers.js'
 
 const schema = Joi.object({
   contributors: Joi.array().required(),
 }).required()
 
-module.exports = class GithubAllContributorsService extends ConditionalGithubAuthV3Service {
-  static get category() {
-    return 'activity'
+export default class GithubAllContributorsService extends ConditionalGithubAuthV3Service {
+  static category = 'activity'
+  static route = {
+    base: 'github/all-contributors',
+    pattern: ':user/:repo/:branch*',
   }
 
-  static get route() {
-    return {
-      base: 'github/all-contributors',
-      pattern: ':user/:repo/:branch*',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Github All Contributors',
-        namedParams: {
-          repo: 'all-contributors',
-          user: 'all-contributors',
-          branch: 'master',
-        },
-        staticPreview: this.render({ contributorCount: 66 }),
-        documentation,
+  static examples = [
+    {
+      title: 'Github All Contributors',
+      namedParams: {
+        repo: 'all-contributors',
+        user: 'all-contributors',
+        branch: 'master',
       },
-    ]
-  }
+      staticPreview: this.render({ contributorCount: 66 }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'all contributors' }
-  }
+  static defaultBadgeData = { label: 'all contributors' }
 
   static render({ contributorCount }) {
     return renderContributorBadge({ contributorCount })

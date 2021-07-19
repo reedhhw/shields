@@ -1,36 +1,27 @@
-'use strict'
+import { renderVersionBadge } from '../version.js'
+import { NotFound } from '../index.js'
+import BaseChromeWebStoreService from './chrome-web-store-base.js'
 
-const { renderVersionBadge } = require('../version')
-const BaseChromeWebStoreService = require('./chrome-web-store-base')
+export default class ChromeWebStoreVersion extends BaseChromeWebStoreService {
+  static category = 'version'
+  static route = { base: 'chrome-web-store/v', pattern: ':storeId' }
 
-module.exports = class ChromeWebStoreVersion extends BaseChromeWebStoreService {
-  static get category() {
-    return 'version'
-  }
+  static examples = [
+    {
+      title: 'Chrome Web Store',
+      namedParams: { storeId: 'ogffaloegjglncjfehdfplabnoondfjo' },
+      staticPreview: renderVersionBadge({ version: 'v1.1.0' }),
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'chrome-web-store/v',
-      pattern: ':storeId',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Chrome Web Store',
-        namedParams: { storeId: 'ogffaloegjglncjfehdfplabnoondfjo' },
-        staticPreview: renderVersionBadge({ version: 'v1.1.0' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'chrome web store' }
-  }
+  static defaultBadgeData = { label: 'chrome web store' }
 
   async handle({ storeId }) {
-    const data = await this.fetch({ storeId })
-    return renderVersionBadge({ version: data.version })
+    const chromeWebStore = await this.fetch({ storeId })
+    const version = chromeWebStore.version()
+    if (version == null) {
+      throw new NotFound({ prettyMessage: 'not found' })
+    }
+    return renderVersionBadge({ version })
   }
 }

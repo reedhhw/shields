@@ -1,47 +1,30 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderLicenseBadge } = require('../licenses')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { documentation, errorMessagesFor } = require('./github-helpers')
+import Joi from 'joi'
+import { renderLicenseBadge } from '../licenses.js'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { documentation, errorMessagesFor } from './github-helpers.js'
 
 const schema = Joi.object({
   // Some repos do not have a license, in which case GitHub returns `{ license: null }`.
   license: Joi.object({ spdx_id: Joi.string().required() }).allow(null),
 }).required()
 
-module.exports = class GithubLicense extends GithubAuthV3Service {
-  static get category() {
-    return 'license'
-  }
-
-  static get route() {
-    return {
-      base: 'github/license',
-      pattern: ':user/:repo',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub',
-        namedParams: { user: 'mashape', repo: 'apistatus' },
-        staticPreview: {
-          label: 'license',
-          message: 'MIT',
-          color: 'green',
-        },
-        documentation,
+export default class GithubLicense extends GithubAuthV3Service {
+  static category = 'license'
+  static route = { base: 'github/license', pattern: ':user/:repo' }
+  static examples = [
+    {
+      title: 'GitHub',
+      namedParams: { user: 'mashape', repo: 'apistatus' },
+      staticPreview: {
+        label: 'license',
+        message: 'MIT',
+        color: 'green',
       },
-    ]
-  }
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'license',
-    }
-  }
+  static defaultBadgeData = { label: 'license' }
 
   static render({ license }) {
     if (license === 'NOASSERTION') {

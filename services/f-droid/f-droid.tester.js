@@ -1,12 +1,10 @@
-'use strict'
+import { ServiceTester } from '../tester.js'
+import { isVPlusDottedVersionAtLeastOne } from '../test-validators.js'
 
-const { ServiceTester } = require('../tester')
-const { isVPlusDottedVersionAtLeastOne } = require('../test-validators')
-
-const t = (module.exports = new ServiceTester({
+export const t = new ServiceTester({
   id: 'f-droid',
   title: 'F-Droid',
-}))
+})
 
 const testPkg = 'org.fdroid.fdroid.privileged'
 const testJson = `
@@ -30,8 +28,8 @@ const testJson = `
 }
 `
 
-const base = 'https://gitlab.com/kitsunyan/fdroidapi'
-const path = `/raw/master/applications/${testPkg}`
+const base = 'https://f-droid.org/api/v1'
+const path = `/packages/${testPkg}`
 
 t.create('Package is found')
   .get(`/v/${testPkg}.json`)

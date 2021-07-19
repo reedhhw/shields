@@ -1,26 +1,16 @@
-'use strict'
+import NodeVersionBase from './node-base.js'
+import { versionColorForRangeLts } from './node-version-color.js'
 
-const NodeVersionBase = require('./node-base')
-const { versionColorForRangeLts } = require('./node-version-color')
+export default class NodeLtsVersion extends NodeVersionBase {
+  static route = this.buildRoute('node/v-lts', { withTag: true })
 
-module.exports = class NodeLtsVersion extends NodeVersionBase {
-  static get path() {
-    return 'v-lts'
+  static defaultBadgeData = {
+    label: 'node-lts',
   }
 
-  static get defaultBadgeData() {
-    return { label: 'node-lts' }
-  }
+  static type = 'lts'
 
-  static get type() {
-    return 'lts'
-  }
+  static colorResolver = versionColorForRangeLts
 
-  static get colorResolver() {
-    return versionColorForRangeLts
-  }
-
-  static get documentation() {
-    return `This badge indicates whether the package supports <b>all</b> LTS node versions`
-  }
+  static documentation = `This badge indicates whether the package supports <b>all</b> LTS node versions`
 }

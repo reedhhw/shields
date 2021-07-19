@@ -1,61 +1,51 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderVersionBadge } = require('../version')
-const {
+import Joi from 'joi'
+import { renderVersionBadge } from '../version.js'
+import {
   BaseVisualStudioAppCenterService,
   keywords,
   documentation,
-} = require('./visual-studio-app-center-base')
+} from './visual-studio-app-center-base.js'
 
 const schema = Joi.object({
   version: Joi.string().required(),
   short_version: Joi.string().required(),
 }).required()
 
-module.exports = class VisualStudioAppCenterReleasesVersion extends BaseVisualStudioAppCenterService {
-  static get category() {
-    return 'version'
+export default class VisualStudioAppCenterReleasesVersion extends BaseVisualStudioAppCenterService {
+  static category = 'version'
+
+  static route = {
+    base: 'visual-studio-app-center/releases/version',
+    pattern: ':owner/:app/:token',
   }
 
-  static get route() {
-    return {
-      base: 'visual-studio-app-center/releases/version',
-      pattern: ':owner/:app/:token',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Visual Studio App Center Releases',
-        namedParams: {
-          owner: 'jct',
-          app: 'my-amazing-app',
-          token: 'ac70cv...',
-        },
-        staticPreview: renderVersionBadge({ version: '1.0 (4)' }),
-        keywords,
-        documentation,
+  static examples = [
+    {
+      title: 'Visual Studio App Center Releases',
+      namedParams: {
+        owner: 'jct',
+        app: 'my-amazing-app',
+        token: 'ac70cv...',
       },
-    ]
-  }
+      staticPreview: renderVersionBadge({ version: '1.0 (4)' }),
+      keywords,
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'release',
-    }
+  static defaultBadgeData = {
+    label: 'release',
   }
 
   async handle({ owner, app, token }) {
-    const { version, short_version } = await this.fetch({
+    const { version, short_version: shortVersion } = await this.fetch({
       owner,
       app,
       token,
       schema,
     })
     return renderVersionBadge({
-      version: `${short_version} (${version})`,
+      version: `${shortVersion} (${version})`,
     })
   }
 }

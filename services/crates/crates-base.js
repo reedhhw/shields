@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const keywords = ['Rust']
 
@@ -41,9 +39,7 @@ const errorSchema = Joi.object({
 const schema = Joi.alternatives(crateSchema, versionSchema, errorSchema)
 
 class BaseCratesService extends BaseJsonService {
-  static get defaultBadgeData() {
-    return { label: 'crates.io' }
-  }
+  static defaultBadgeData = { label: 'crates.io' }
 
   async fetch({ crate, version }) {
     const url = version
@@ -53,4 +49,4 @@ class BaseCratesService extends BaseJsonService {
   }
 }
 
-module.exports = { BaseCratesService, keywords }
+export { BaseCratesService, keywords }

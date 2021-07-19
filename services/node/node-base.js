@@ -1,17 +1,9 @@
-'use strict'
-
-const NPMBase = require('../npm/npm-base')
+import NPMBase from '../npm/npm-base.js'
 
 const keywords = ['npm']
 
-module.exports = class NodeVersionBase extends NPMBase {
-  static get category() {
-    return 'platform-support'
-  }
-
-  static get route() {
-    return this.buildRoute(`node/${this.path}`, { withTag: true })
-  }
+export default class NodeVersionBase extends NPMBase {
+  static category = 'platform-support'
 
   static get examples() {
     const type = this.type
@@ -112,12 +104,8 @@ module.exports = class NodeVersionBase extends NPMBase {
   }
 
   async handle(namedParams, queryParams) {
-    const {
-      scope,
-      packageName,
-      tag,
-      registryUrl,
-    } = this.constructor.unpackParams(namedParams, queryParams)
+    const { scope, packageName, tag, registryUrl } =
+      this.constructor.unpackParams(namedParams, queryParams)
     const { engines } = await this.fetchPackageData({
       scope,
       packageName,

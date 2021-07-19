@@ -33,13 +33,13 @@ The code for our badge is in `services/wercker/wercker.service.js`. Tests for th
 We'll start by adding some boilerplate to our file:
 
 ```js
-'use strict'
+import { createServiceTester } from '../tester.js'
 
-const t = (module.exports = require('../tester').createServiceTester())
+export const t = await createServiceTester()
 ```
 
 If our `.service.js` module exports a single class, we can
-`require('../tester').createServiceTester()`, which uses convention to create a
+`createServiceTester`, which uses convention to create a
 `ServiceTester` object. Calling this inside
 `services/wercker/wercker.tester.js` will create a `ServiceTester` object
 configured for the service exported in `services/wercker/wercker.service.js`.
@@ -51,7 +51,7 @@ from the module.
 First we'll add a test for the typical case:
 
 ```js
-const { isBuildStatus } = require('../test-validators')
+import { isBuildStatus } from '../test-validators.js'
 
 t.create('Build status')
   .get('/build/wercker/go-wercker-api.json')
@@ -66,7 +66,7 @@ t.create('Build status')
    - Note that when we call our badge, we are allowing it to communicate with an external service without mocking the response. We write tests which interact with external services, which is unusual practice in unit testing. We do this because one of the purposes of service tests is to notify us if a badge has broken due to an upstream API change. For this reason it is important for at least one test to call the live API without mocking the interaction.
    - All badges on shields can be requested in a number of formats. As well as calling https://img.shields.io/wercker/build/wercker/go-wercker-api.svg to generate ![](https://img.shields.io/wercker/build/wercker/go-wercker-api.svg) we can also call https://img.shields.io/wercker/build/wercker/go-wercker-api.json to request the same content as JSON. When writing service tests, we request the badge in JSON format so it is easier to make assertions about the content.
    - We don't need to explicitly call `/wercker/build/wercker/go-wercker-api.json` here, only `/build/wercker/go-wercker-api.json`. When we create a tester object with `createServiceTester()` the URL base defined in our service class (in this case `/wercker`) is used as the base URL for any requests made by the tester object.
-3. `expectBadge()` is a helper function which accepts either a string literal or a [Joi][] schema for the different fields.
+3. `expectBadge()` is a helper function which accepts either a string literal, a [RegExp][] or a [Joi][] schema for the different fields.
    Joi is a validation library that is build into IcedFrisby which you can use to
    match based on a set of allowed strings, regexes, or specific values. You can
    refer to their [API reference][joi api].
@@ -82,6 +82,7 @@ harness will call it for you.
 [icedfrisby api]: https://github.com/MarkHerhold/IcedFrisby/blob/master/API.md
 [joi]: https://github.com/hapijs/joi
 [joi api]: https://github.com/hapijs/joi/blob/master/API.md
+[regexp]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp
 
 ### (3) Running the Tests
 
@@ -259,21 +260,9 @@ npm run coverage:report:open
 
 ## Pull requests
 
-The affected service ids should be included in square brackets in the pull request
-title. That way, Circle CI will run those service tests. When a pull request
-affects multiple services, they should be separated with spaces. The test
-runner is case-insensitive, so they should be capitalized for readability.
+Pull requests must follow the [documented conventions][pr-conventions] in order to execute the correct set of service tests.
 
-For example:
-
-- [Travis] Fix timeout issues
-- [Travis Sonar] Support user token authentication
-- Add tests for [CRAN] and [CPAN]
-
-In the rare case when it's necessary to see the output of a full service-test
-run in a PR, include `[*****]` in the title. Unless all the tests pass, the build
-will fail, so likely it will be necessary to remove it and re-run the tests
-before merging.
+[pr-conventions]: https://github.com/badges/shields/blob/master/CONTRIBUTING.md#running-service-tests-in-pull-requests
 
 ## Getting help
 

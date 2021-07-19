@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderVersionBadge } = require('../version')
-const { BaseJsonService, NotFound } = require('..')
+import Joi from 'joi'
+import { renderVersionBadge } from '../version.js'
+import { BaseJsonService, NotFound } from '../index.js'
 
 const schema = Joi.object({
   entries: Joi.array()
@@ -14,30 +12,24 @@ const schema = Joi.object({
     .required(),
 }).required()
 
-module.exports = class Ubuntu extends BaseJsonService {
-  static get category() {
-    return 'version'
+export default class Ubuntu extends BaseJsonService {
+  static category = 'version'
+
+  static route = {
+    base: 'ubuntu/v',
+    pattern: ':packageName/:series?',
   }
 
-  static get route() {
-    return {
-      base: 'ubuntu/v',
-      pattern: ':packageName/:series?',
-    }
-  }
+  static examples = [
+    {
+      title: 'Ubuntu package',
+      namedParams: { series: 'bionic', packageName: 'ubuntu-wallpapers' },
+      staticPreview: renderVersionBadge({ version: '18.04.1-0ubuntu1' }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Ubuntu package',
-        namedParams: { series: 'bionic', packageName: 'ubuntu-wallpapers' },
-        staticPreview: renderVersionBadge({ version: '18.04.1-0ubuntu1' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'ubuntu' }
+  static defaultBadgeData = {
+    label: 'ubuntu',
   }
 
   async fetch({ packageName, series }) {

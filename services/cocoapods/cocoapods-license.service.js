@@ -1,32 +1,18 @@
-'use strict'
+import BaseCocoaPodsService from './cocoapods-base.js'
 
-const BaseCocoaPodsService = require('./cocoapods-base')
+export default class CocoapodsLicense extends BaseCocoaPodsService {
+  static category = 'license'
+  static route = { base: 'cocoapods/l', pattern: ':spec' }
 
-module.exports = class CocoapodsLicense extends BaseCocoaPodsService {
-  static get category() {
-    return 'license'
-  }
+  static examples = [
+    {
+      title: 'Cocoapods',
+      namedParams: { spec: 'AFNetworking' },
+      staticPreview: this.render({ license: 'MIT' }),
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'cocoapods/l',
-      pattern: ':spec',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Cocoapods',
-        namedParams: { spec: 'AFNetworking' },
-        staticPreview: this.render({ license: 'MIT' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'license' }
-  }
+  static defaultBadgeData = { label: 'license' }
 
   static render({ license }) {
     if (license) {

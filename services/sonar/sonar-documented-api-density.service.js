@@ -1,50 +1,40 @@
-'use strict'
-
-const SonarBase = require('./sonar-base')
-const {
+import SonarBase from './sonar-base.js'
+import {
   queryParamSchema,
   getLabel,
   positiveMetricColorScale,
   keywords,
   documentation,
-} = require('./sonar-helpers')
+} from './sonar-helpers.js'
 
 const metric = 'public_documented_api_density'
 
-module.exports = class SonarDocumentedApiDensity extends SonarBase {
-  static get category() {
-    return 'analysis'
+export default class SonarDocumentedApiDensity extends SonarBase {
+  static category = 'analysis'
+
+  static route = {
+    base: `sonar/${metric}`,
+    pattern: ':component',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: `sonar/${metric}`,
-      pattern: ':component',
-      queryParamSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Sonar Documented API Density',
-        namedParams: {
-          component: 'org.ow2.petals:petals-se-ase',
-        },
-        queryParams: {
-          server: 'http://sonar.petalslink.com',
-          sonarVersion: '4.2',
-        },
-        staticPreview: this.render({ density: 82 }),
-        keywords,
-        documentation,
+  static examples = [
+    {
+      title: 'Sonar Documented API Density',
+      namedParams: {
+        component: 'org.ow2.petals:petals-se-ase',
       },
-    ]
-  }
+      queryParams: {
+        server: 'http://sonar.petalslink.com',
+        sonarVersion: '4.2',
+      },
+      staticPreview: this.render({ density: 82 }),
+      keywords,
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: getLabel({ metric }) }
-  }
+  static defaultBadgeData = { label: getLabel({ metric }) }
 
   static render({ density }) {
     return {

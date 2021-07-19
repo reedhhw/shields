@@ -1,17 +1,11 @@
-'use strict'
+import { isIntegerPercentage } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
-const { isIntegerPercentage } = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
-
-t.create('semver stability (valid)')
-  .get('/bundler/puma.json')
-  .expectBadge({
-    label: 'semver stability',
-    message: isIntegerPercentage,
-    link: [
-      'https://dependabot.com/compatibility-score.html?package-manager=bundler&dependency-name=puma&version-scheme=semver',
-    ],
-  })
+t.create('semver stability (valid)').get('/bundler/puma.json').expectBadge({
+  label: 'semver stability',
+  message: isIntegerPercentage,
+})
 
 t.create('semver stability (invalid error)')
   .get('/invalid-manager/puma.json')

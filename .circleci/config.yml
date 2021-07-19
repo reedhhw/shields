@@ -86,33 +86,6 @@ services_steps: &services_steps
     - store_test_results:
         path: junit
 
-run_package_tests: &run_package_tests
-  when: always
-  command: |
-    # https://discuss.circleci.com/t/switch-nodejs-version-on-machine-executor-solved/26675/3
-    set +e
-    export NVM_DIR="/opt/circleci/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    nvm install $NODE_VERSION
-    nvm use $NODE_VERSION
-    node --version
-
-    # install the shields.io dependencies
-    npm ci
-
-    # run the package tests
-    npm run test:package
-    npm run check-types:package
-
-    # delete the sheilds.io dependencies
-    rm -rf node_modules/
-
-    # run a smoke test (render a badge with the CLI)
-    # with only the package dependencies installed
-    cd badge-maker
-    npm link
-    badge cactus grown :green @flat
-
 package_steps: &package_steps
   steps:
     - checkout
@@ -123,85 +96,74 @@ package_steps: &package_steps
           set +e
           export NVM_DIR="/opt/circleci/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm install v12
-          nvm use v12
+          nvm install v14
+          nvm use v14
           npm install -g npm
 
     # Run the package tests on each currently supported node version. See:
     # https://github.com/badges/shields/blob/master/badge-maker/README.md#node-version-support
+    # https://nodejs.org/en/about/releases/
 
     - run:
-        <<: *run_package_tests
-        environment:
-          mocha_reporter: mocha-junit-reporter
-          MOCHA_FILE: junit/badge-maker/v10/results.xml
-          NODE_VERSION: v10
-          CYPRESS_INSTALL_BINARY: 0
-        name: Run package tests on Node 10
-
-    - run:
-        <<: *run_package_tests
         environment:
           mocha_reporter: mocha-junit-reporter
           MOCHA_FILE: junit/badge-maker/v12/results.xml
           NODE_VERSION: v12
           CYPRESS_INSTALL_BINARY: 0
         name: Run package tests on Node 12
+        command: scripts/run_package_tests.sh
 
     - run:
-        <<: *run_package_tests
         environment:
           mocha_reporter: mocha-junit-reporter
           MOCHA_FILE: junit/badge-maker/v14/results.xml
           NODE_VERSION: v14
           CYPRESS_INSTALL_BINARY: 0
         name: Run package tests on Node 14
+        command: scripts/run_package_tests.sh
+
+    - run:
+        environment:
+          mocha_reporter: mocha-junit-reporter
+          MOCHA_FILE: junit/badge-maker/v16/results.xml
+          NODE_VERSION: v16
+          CYPRESS_INSTALL_BINARY: 0
+        name: Run package tests on Node 16
+        command: scripts/run_package_tests.sh
 
     - store_test_results:
         path: junit
 
 jobs:
-  npm-install:
-    docker:
-      - image: circleci/node:10
-    steps:
-      - checkout
-
-      - run:
-          name: Install dependencies
-          command: npm ci
-          environment:
-            CYPRESS_INSTALL_BINARY: 0
-
   main:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:14
 
     <<: *main_steps
 
-  main@node-12:
+  main@node-16:
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:16
 
     <<: *main_steps
 
   integration:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:14
       - image: redis
 
     <<: *integration_steps
 
-  integration@node-12:
+  integration@node-16:
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:16
       - image: redis
 
     <<: *integration_steps
 
   danger:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:14
     steps:
       - checkout
 
@@ -221,7 +183,7 @@ jobs:
 
   frontend:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:14
     steps:
       - checkout
 
@@ -262,19 +224,19 @@ jobs:
 
   services:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:14
 
     <<: *services_steps
 
-  services@node-12:
+  services@node-16:
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:16
 
     <<: *services_steps
 
   e2e:
     docker:
-      - image: cypress/base:12
+      - image: cypress/base:14.16.0
     steps:
       - checkout
 
@@ -323,11 +285,11 @@ workflows:
           filters:
             branches:
               ignore: gh-pages
-      - main@node-12:
+      - main@node-16:
           filters:
             branches:
               ignore: gh-pages
-      - integration@node-12:
+      - integration@node-16:
           filters:
             branches:
               ignore: gh-pages
@@ -345,7 +307,7 @@ workflows:
               ignore:
                 - master
                 - gh-pages
-      - services@node-12:
+      - services@node-16:
           filters:
             branches:
               ignore:

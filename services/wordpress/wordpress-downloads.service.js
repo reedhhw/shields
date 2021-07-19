@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { downloadCount } = require('../color-formatters')
-const { NotFound } = require('..')
-const BaseWordpress = require('./wordpress-base')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { downloadCount } from '../color-formatters.js'
+import { NotFound } from '../index.js'
+import BaseWordpress from './wordpress-base.js'
 
 const dateSchema = Joi.object()
   .pattern(Joi.date().iso(), Joi.number().integer())
@@ -48,34 +46,24 @@ function DownloadsForExtensionType(extensionType) {
   const { capt, exampleSlug } = extensionData[extensionType]
 
   return class WordpressDownloads extends BaseWordpress {
-    static get name() {
-      return `Wordpress${capt}Downloads`
+    static name = `Wordpress${capt}Downloads`
+
+    static category = 'downloads'
+
+    static route = {
+      base: `wordpress/${extensionType}`,
+      pattern: ':interval(dd|dw|dm|dy|dt)/:slug',
     }
 
-    static get category() {
-      return 'downloads'
-    }
+    static examples = [
+      {
+        title: `WordPress ${capt} Downloads`,
+        namedParams: { interval: 'dm', slug: exampleSlug },
+        staticPreview: this.render({ interval: 'dm', downloads: 200000 }),
+      },
+    ]
 
-    static get route() {
-      return {
-        base: `wordpress/${extensionType}`,
-        pattern: ':interval(dd|dw|dm|dy|dt)/:slug',
-      }
-    }
-
-    static get examples() {
-      return [
-        {
-          title: `WordPress ${capt} Downloads`,
-          namedParams: { interval: 'dm', slug: exampleSlug },
-          staticPreview: this.render({ interval: 'dm', downloads: 200000 }),
-        },
-      ]
-    }
-
-    static get defaultBadgeData() {
-      return { label: 'downloads' }
-    }
+    static defaultBadgeData = { label: 'downloads' }
 
     static render({ interval, downloads }) {
       const { messageSuffix } = intervalMap[interval]
@@ -96,10 +84,10 @@ function DownloadsForExtensionType(extensionType) {
         })
         downloads = _downloads
       } else {
-        const ext_type = extensionType === 'plugin' ? 'plugin' : 'themes'
+        const extType = extensionType === 'plugin' ? 'plugin' : 'themes'
         const json = await this._requestJson({
           schema: dateSchema,
-          url: `https://api.wordpress.org/stats/${ext_type}/1.0/downloads.php`,
+          url: `https://api.wordpress.org/stats/${extType}/1.0/downloads.php`,
           options: {
             qs: {
               slug,
@@ -129,34 +117,24 @@ function InstallsForExtensionType(extensionType) {
   const { capt, exampleSlug } = extensionData[extensionType]
 
   return class WordpressInstalls extends BaseWordpress {
-    static get name() {
-      return `Wordpress${capt}Installs`
+    static name = `Wordpress${capt}Installs`
+
+    static category = 'downloads'
+
+    static route = {
+      base: `wordpress/${extensionType}/installs`,
+      pattern: ':slug',
     }
 
-    static get category() {
-      return 'downloads'
-    }
+    static examples = [
+      {
+        title: `WordPress ${capt} Active Installs`,
+        namedParams: { slug: exampleSlug },
+        staticPreview: this.render({ installCount: 300000 }),
+      },
+    ]
 
-    static get route() {
-      return {
-        base: `wordpress/${extensionType}/installs`,
-        pattern: ':slug',
-      }
-    }
-
-    static get examples() {
-      return [
-        {
-          title: `WordPress ${capt} Active Installs`,
-          namedParams: { slug: exampleSlug },
-          staticPreview: this.render({ installCount: 300000 }),
-        },
-      ]
-    }
-
-    static get defaultBadgeData() {
-      return { label: 'active installs' }
-    }
+    static defaultBadgeData = { label: 'active installs' }
 
     static render({ installCount }) {
       return {
@@ -178,4 +156,4 @@ function InstallsForExtensionType(extensionType) {
 const downloadServices = ['plugin', 'theme'].map(DownloadsForExtensionType)
 const installServices = ['plugin', 'theme'].map(InstallsForExtensionType)
 const modules = [...downloadServices, ...installServices]
-module.exports = modules
+export default modules

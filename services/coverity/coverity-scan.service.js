@@ -1,44 +1,28 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { BaseJsonService } from '../index.js'
 
 const messageRegex = /passed|passed .* new defects|pending|failed/
 const schema = Joi.object({
   message: Joi.string().regex(messageRegex).required(),
 }).required()
 
-module.exports = class CoverityScan extends BaseJsonService {
-  static get category() {
-    return 'analysis'
-  }
+export default class CoverityScan extends BaseJsonService {
+  static category = 'analysis'
+  static route = { base: 'coverity/scan', pattern: ':projectId' }
 
-  static get route() {
-    return {
-      base: 'coverity/scan',
-      pattern: ':projectId',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Coverity Scan',
-        namedParams: {
-          projectId: '3997',
-        },
-        staticPreview: this.render({
-          message: 'passed',
-        }),
+  static examples = [
+    {
+      title: 'Coverity Scan',
+      namedParams: {
+        projectId: '3997',
       },
-    ]
-  }
+      staticPreview: this.render({
+        message: 'passed',
+      }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'coverity',
-    }
-  }
+  static defaultBadgeData = { label: 'coverity' }
 
   static render({ message }) {
     let color

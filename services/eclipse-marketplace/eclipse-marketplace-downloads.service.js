@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { downloadCount: downloadCountColor } = require('../color-formatters')
-const { nonNegativeInteger } = require('../validators')
-const EclipseMarketplaceBase = require('./eclipse-marketplace-base')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { downloadCount as downloadCountColor } from '../color-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import EclipseMarketplaceBase from './eclipse-marketplace-base.js'
 
 const monthlyResponseSchema = Joi.object({
   marketplace: Joi.object({
@@ -23,7 +21,12 @@ const totalResponseSchema = Joi.object({
 }).required()
 
 function DownloadsForInterval(interval) {
-  const { base, schema, messageSuffix = '', name } = {
+  const {
+    base,
+    schema,
+    messageSuffix = '',
+    name,
+  } = {
     month: {
       base: 'eclipse-marketplace/dm',
       messageSuffix: '/month',
@@ -38,27 +41,16 @@ function DownloadsForInterval(interval) {
   }[interval]
 
   return class EclipseMarketplaceDownloads extends EclipseMarketplaceBase {
-    static get name() {
-      return name
-    }
-
-    static get category() {
-      return 'downloads'
-    }
-
-    static get route() {
-      return this.buildRoute(base)
-    }
-
-    static get examples() {
-      return [
-        {
-          title: 'Eclipse Marketplace',
-          namedParams: { name: 'notepad4e' },
-          staticPreview: this.render({ downloads: 30000 }),
-        },
-      ]
-    }
+    static name = name
+    static category = 'downloads'
+    static route = this.buildRoute(base)
+    static examples = [
+      {
+        title: 'Eclipse Marketplace',
+        namedParams: { name: 'notepad4e' },
+        staticPreview: this.render({ downloads: 30000 }),
+      },
+    ]
 
     static render({ downloads }) {
       return {
@@ -78,4 +70,4 @@ function DownloadsForInterval(interval) {
   }
 }
 
-module.exports = ['month', 'total'].map(DownloadsForInterval)
+export default ['month', 'total'].map(DownloadsForInterval)

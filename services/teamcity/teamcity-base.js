@@ -1,14 +1,10 @@
-'use strict'
+import { BaseJsonService } from '../index.js'
 
-const { BaseJsonService } = require('..')
-
-module.exports = class TeamCityBase extends BaseJsonService {
-  static get auth() {
-    return {
-      userKey: 'teamcity_user',
-      passKey: 'teamcity_pass',
-      serviceKey: 'teamcity',
-    }
+export default class TeamCityBase extends BaseJsonService {
+  static auth = {
+    userKey: 'teamcity_user',
+    passKey: 'teamcity_pass',
+    serviceKey: 'teamcity',
   }
 
   async fetch({ url, schema, qs = {}, errorMessages = {} }) {

@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderVersionBadge } = require('../version')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { renderVersionBadge } from '../version.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   License: Joi.string().required(),
@@ -10,9 +8,7 @@ const schema = Joi.object({
 }).required()
 
 class BaseCranService extends BaseJsonService {
-  static get defaultBadgeData() {
-    return { label: 'cran' }
-  }
+  static defaultBadgeData = { label: 'cran' }
 
   async fetch({ packageName }) {
     const url = `http://crandb.r-pkg.org/${packageName}`
@@ -21,26 +17,16 @@ class BaseCranService extends BaseJsonService {
 }
 
 class CranLicense extends BaseCranService {
-  static get category() {
-    return 'license'
-  }
+  static category = 'license'
+  static route = { base: 'cran/l', pattern: ':packageName' }
 
-  static get route() {
-    return {
-      base: 'cran/l',
-      pattern: ':packageName',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'CRAN/METACRAN',
-        namedParams: { packageName: 'devtools' },
-        staticPreview: this.render({ license: 'GPL (>= 2)' }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'CRAN/METACRAN',
+      namedParams: { packageName: 'devtools' },
+      staticPreview: this.render({ license: 'MIT + file LICENSE' }),
+    },
+  ]
 
   static render({ license }) {
     return {
@@ -57,26 +43,16 @@ class CranLicense extends BaseCranService {
 }
 
 class CranVersion extends BaseCranService {
-  static get category() {
-    return 'version'
-  }
+  static category = 'version'
+  static route = { base: 'cran/v', pattern: ':packageName' }
 
-  static get route() {
-    return {
-      base: 'cran/v',
-      pattern: ':packageName',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'CRAN/METACRAN',
-        namedParams: { packageName: 'devtools' },
-        staticPreview: this.render({ version: '2.0.1' }),
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'CRAN/METACRAN',
+      namedParams: { packageName: 'devtools' },
+      staticPreview: this.render({ version: '2.0.1' }),
+    },
+  ]
 
   static render({ version }) {
     return renderVersionBadge({ version })
@@ -88,4 +64,4 @@ class CranVersion extends BaseCranService {
   }
 }
 
-module.exports = { CranLicense, CranVersion }
+export { CranLicense, CranVersion }

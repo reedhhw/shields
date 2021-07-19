@@ -1,9 +1,6 @@
-'use strict'
-
-const {
-  isVPlusDottedVersionNClausesWithOptionalSuffix: isVersion,
-} = require('../test-validators')
-const t = (module.exports = require('../tester').createServiceTester())
+import { isVPlusDottedVersionNClausesWithOptionalSuffix as isVersion } from '../test-validators.js'
+import { createServiceTester } from '../tester.js'
+export const t = await createServiceTester()
 
 t.create('Nexus 2 - search release version valid artifact')
   .timeout(15000)
@@ -82,6 +79,22 @@ t.create('Nexus 2 - snapshot version with + in version')
       .get('/service/local/lucene/search')
       .query({ g: 'com.progress.fuse', a: 'fusehq' })
       .reply(200, { data: [{ version: '7.0.1+19-8844c122-SNAPSHOT' }] })
+  )
+  .expectBadge({
+    label: 'nexus',
+    color: 'orange',
+    message: isVersion,
+  })
+
+t.create('Nexus 2 - snapshot version with + and hex hash in version')
+  .get(
+    '/s/com.typesafe.akka/akka-stream-kafka_2.13.json?server=https://repository.jboss.org/nexus'
+  )
+  .intercept(nock =>
+    nock('https://repository.jboss.org/nexus')
+      .get('/service/local/lucene/search')
+      .query({ g: 'com.typesafe.akka', a: 'akka-stream-kafka_2.13' })
+      .reply(200, { data: [{ version: '2.1.0-M1+58-f25047fc-SNAPSHOT' }] })
   )
   .expectBadge({
     label: 'nexus',

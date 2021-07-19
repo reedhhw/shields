@@ -1,9 +1,7 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { optionalNonNegativeInteger } = require('../validators')
-const { metric } = require('../text-formatters')
-const { BaseJsonService, NotFound } = require('..')
+import Joi from 'joi'
+import { optionalNonNegativeInteger } from '../validators.js'
+import { metric } from '../text-formatters.js'
+import { BaseJsonService, NotFound } from '../index.js'
 
 const schema = Joi.object({
   data: Joi.object({
@@ -11,38 +9,30 @@ const schema = Joi.object({
   }).required(),
 }).required()
 
-module.exports = class RedditSubredditSubscribers extends BaseJsonService {
-  static get category() {
-    return 'social'
+export default class RedditSubredditSubscribers extends BaseJsonService {
+  static category = 'social'
+
+  static route = {
+    base: 'reddit/subreddit-subscribers',
+    pattern: ':subreddit',
   }
 
-  static get route() {
-    return {
-      base: 'reddit/subreddit-subscribers',
-      pattern: ':subreddit',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Subreddit subscribers',
-        namedParams: { subreddit: 'drums' },
-        staticPreview: {
-          label: 'follow r/drums',
-          message: '77k',
-          color: 'red',
-          style: 'social',
-        },
+  static examples = [
+    {
+      title: 'Subreddit subscribers',
+      namedParams: { subreddit: 'drums' },
+      staticPreview: {
+        label: 'follow r/drums',
+        message: '77k',
+        color: 'red',
+        style: 'social',
       },
-    ]
-  }
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'reddit',
-      namedLogo: 'reddit',
-    }
+  static defaultBadgeData = {
+    label: 'reddit',
+    namedLogo: 'reddit',
   }
 
   static render({ subreddit, subscribers }) {

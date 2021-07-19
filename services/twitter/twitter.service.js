@@ -1,50 +1,40 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { optionalUrl } = require('../validators')
-const { BaseService, BaseJsonService, NotFound } = require('..')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { optionalUrl } from '../validators.js'
+import { BaseService, BaseJsonService, NotFound } from '../index.js'
 
 const queryParamSchema = Joi.object({
   url: optionalUrl.required(),
 }).required()
 
 class TwitterUrl extends BaseService {
-  static get category() {
-    return 'social'
+  static category = 'social'
+
+  static route = {
+    base: 'twitter',
+    pattern: 'url',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'twitter',
-      pattern: 'url',
-      queryParamSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Twitter URL',
-        namedParams: {},
-        queryParams: {
-          url: 'https://shields.io',
-        },
-        // hard code the static preview
-        // because link[] is not allowed in examples
-        staticPreview: {
-          label: 'Tweet',
-          message: '',
-          style: 'social',
-        },
+  static examples = [
+    {
+      title: 'Twitter URL',
+      namedParams: {},
+      queryParams: {
+        url: 'https://shields.io',
       },
-    ]
-  }
+      // hard code the static preview
+      // because link[] is not allowed in examples
+      staticPreview: {
+        label: 'Tweet',
+        message: '',
+        style: 'social',
+      },
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      namedLogo: 'twitter',
-    }
+  static defaultBadgeData = {
+    namedLogo: 'twitter',
   }
 
   async handle(_routeParams, { url }) {
@@ -64,40 +54,32 @@ class TwitterUrl extends BaseService {
 const schema = Joi.any()
 
 class TwitterFollow extends BaseJsonService {
-  static get category() {
-    return 'social'
+  static category = 'social'
+
+  static route = {
+    base: 'twitter/follow',
+    pattern: ':user',
   }
 
-  static get route() {
-    return {
-      base: 'twitter/follow',
-      pattern: ':user',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Twitter Follow',
-        namedParams: {
-          user: 'espadrine',
-        },
-        queryParams: { label: 'Follow' },
-        // hard code the static preview
-        // because link[] is not allowed in examples
-        staticPreview: {
-          label: 'Follow',
-          message: '393',
-          style: 'social',
-        },
+  static examples = [
+    {
+      title: 'Twitter Follow',
+      namedParams: {
+        user: 'espadrine',
       },
-    ]
-  }
+      queryParams: { label: 'Follow' },
+      // hard code the static preview
+      // because link[] is not allowed in examples
+      staticPreview: {
+        label: 'Follow',
+        message: '393',
+        style: 'social',
+      },
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      namedLogo: 'twitter',
-    }
+  static defaultBadgeData = {
+    namedLogo: 'twitter',
   }
 
   static render({ user, followers }) {
@@ -131,4 +113,4 @@ class TwitterFollow extends BaseJsonService {
   }
 }
 
-module.exports = [TwitterUrl, TwitterFollow]
+export default [TwitterUrl, TwitterFollow]

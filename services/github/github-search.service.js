@@ -1,45 +1,35 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { errorMessagesFor, documentation } = require('./github-helpers')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { errorMessagesFor, documentation } from './github-helpers.js'
 
 const schema = Joi.object({ total_count: nonNegativeInteger }).required()
 
-module.exports = class GithubSearch extends GithubAuthV3Service {
-  static get category() {
-    return 'analysis'
+export default class GithubSearch extends GithubAuthV3Service {
+  static category = 'analysis'
+
+  static route = {
+    base: 'github/search',
+    pattern: ':user/:repo/:query+',
   }
 
-  static get route() {
-    return {
-      base: 'github/search',
-      pattern: ':user/:repo/:query+',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub search hit counter',
-        pattern: ':user/:repo/:query',
-        namedParams: {
-          user: 'torvalds',
-          repo: 'linux',
-          query: 'goto',
-        },
-        staticPreview: this.render({ query: 'goto', totalCount: 14000 }),
-        documentation,
+  static examples = [
+    {
+      title: 'GitHub search hit counter',
+      pattern: ':user/:repo/:query',
+      namedParams: {
+        user: 'torvalds',
+        repo: 'linux',
+        query: 'goto',
       },
-    ]
-  }
+      staticPreview: this.render({ query: 'goto', totalCount: 14000 }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'counter',
-    }
+  static defaultBadgeData = {
+    label: 'counter',
   }
 
   static render({ query, totalCount }) {

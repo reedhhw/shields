@@ -1,35 +1,11 @@
-'use strict'
-
-const request = require('request')
-const queryString = require('query-string')
-const makeBadge = require('../../badge-maker/lib/make-badge')
-const { setCacheHeaders } = require('./cache-headers')
-const {
-  Inaccessible,
-  InvalidResponse,
-  ShieldsRuntimeError,
-} = require('./errors')
-const { makeSend } = require('./legacy-result-sender')
-const LruCache = require('./lru-cache')
-const coalesceBadge = require('./coalesce-badge')
+import request from 'request'
+import makeBadge from '../../badge-maker/lib/make-badge.js'
+import { setCacheHeaders } from './cache-headers.js'
+import { Inaccessible, InvalidResponse, ShieldsRuntimeError } from './errors.js'
+import { makeSend } from './legacy-result-sender.js'
+import coalesceBadge from './coalesce-badge.js'
 
 const userAgent = 'Shields.io/2003a'
-
-// We avoid calling the vendor's server for computation of the information in a
-// number of badges.
-const minAccuracy = 0.75
-
-// The quotient of (vendor) data change frequency by badge request frequency
-// must be lower than this to trigger sending the cached data *before*
-// updating our data from the vendor's server.
-// Indeed, the accuracy of our badges are:
-// A(Δt) = 1 - min(# data change over Δt, # requests over Δt)
-//             / (# requests over Δt)
-//       = 1 - max(1, df) / rf
-const freqRatioMax = 1 - minAccuracy
-
-// Request cache size of 5MB (~5000 bytes/image).
-const requestCache = new LruCache(1000)
 
 // These query parameters are available to any badge. They are handled by
 // `coalesceBadge`.
@@ -101,13 +77,23 @@ function handleRequest(cacheHeaderConfig, handlerOptions) {
   }
 
   const allowedKeys = flattenQueryParams(handlerOptions.queryParams)
-  const {
-    cacheLength: serviceDefaultCacheLengthSeconds,
-    fetchLimitBytes,
-  } = handlerOptions
+  const { cacheLength: serviceDefaultCacheLengthSeconds, fetchLimitBytes } =
+    handlerOptions
 
   return (queryParams, match, end, ask) => {
-    const reqTime = new Date()
+    /*
+    This is here for legacy reasons. The badge server and frontend used to live
+    on two different servers. When we merged them there was a conflict so we
+    did this to avoid moving the endpoint docs to another URL.
+
+    Never ever do this again.
+    */
+    if (match[0] === '/endpoint' && Object.keys(queryParams).length === 0) {
+      ask.res.statusCode = 301
+      ask.res.setHeader('Location', '/endpoint/')
+      ask.res.end()
+      return
+    }
 
     // `defaultCacheLengthSeconds` can be overridden by
     // `serviceDefaultCacheLengthSeconds` (either by category or on a badge-
@@ -137,49 +123,10 @@ function handleRequest(cacheHeaderConfig, handlerOptions) {
       filteredQueryParams[key] = queryParams[key]
     })
 
-    // Use sindresorhus query-string because it sorts the keys, whereas the
-    // builtin querystring module relies on the iteration order.
-    const stringified = queryString.stringify(filteredQueryParams)
-    const cacheIndex = `${match[0]}?${stringified}`
-
-    // Should we return the data right away?
-    const cached = requestCache.get(cacheIndex)
-    let cachedVersionSent = false
-    if (cached !== undefined) {
-      // A request was made not long ago.
-      const tooSoon = +reqTime - cached.time < cached.interval
-      if (tooSoon || cached.dataChange / cached.reqs <= freqRatioMax) {
-        const svg = makeBadge(cached.data.badgeData)
-        setCacheHeadersOnResponse(
-          ask.res,
-          cached.data.badgeData.cacheLengthSeconds
-        )
-        makeSend(cached.data.format, ask.res, end)(svg)
-        cachedVersionSent = true
-        // We do not wish to call the vendor servers.
-        if (tooSoon) {
-          return
-        }
-      }
-    }
-
     // In case our vendor servers are unresponsive.
     let serverUnresponsive = false
     const serverResponsive = setTimeout(() => {
       serverUnresponsive = true
-      if (cachedVersionSent) {
-        return
-      }
-      if (requestCache.has(cacheIndex)) {
-        const cached = requestCache.get(cacheIndex)
-        const svg = makeBadge(cached.data.badgeData)
-        setCacheHeadersOnResponse(
-          ask.res,
-          cached.data.badgeData.cacheLengthSeconds
-        )
-        makeSend(cached.data.format, ask.res, end)(svg)
-        return
-      }
       ask.res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
       const badgeData = coalesceBadge(
         filteredQueryParams,
@@ -192,8 +139,6 @@ function handleRequest(cacheHeaderConfig, handlerOptions) {
       makeSend(extension, ask.res, end)(svg)
     }, 25000)
 
-    // Only call vendor servers when last request is older than…
-    let cacheInterval = 5000 // milliseconds
     function cachingRequest(uri, options, callback) {
       if (typeof options === 'function' && !callback) {
         callback = options
@@ -209,20 +154,7 @@ function handleRequest(cacheHeaderConfig, handlerOptions) {
       options.headers['User-Agent'] = userAgent
 
       let bufferLength = 0
-      const r = request(options, (err, res, body) => {
-        if (res != null && res.headers != null) {
-          const cacheControl = res.headers['cache-control']
-          if (cacheControl != null) {
-            const age = cacheControl.match(/max-age=([0-9]+)/)
-            // Would like to get some more test coverage on this before changing it.
-            // eslint-disable-next-line no-self-compare
-            if (age != null && +age[1] === +age[1]) {
-              cacheInterval = +age[1] * 1000
-            }
-          }
-        }
-        callback(err, res, body)
-      })
+      const r = request(options, callback)
       r.on('data', chunk => {
         bufferLength += chunk.length
         if (bufferLength > fetchLimitBytes) {
@@ -250,34 +182,17 @@ function handleRequest(cacheHeaderConfig, handlerOptions) {
           return
         }
         clearTimeout(serverResponsive)
-        // Check for a change in the data.
-        let dataHasChanged = false
-        if (
-          cached !== undefined &&
-          cached.data.badgeData.text[1] !== badgeData.text[1]
-        ) {
-          dataHasChanged = true
-        }
         // Add format to badge data.
         badgeData.format = format
-        // Update information in the cache.
-        const updatedCache = {
-          reqs: cached ? cached.reqs + 1 : 1,
-          dataChange: cached ? cached.dataChange + (dataHasChanged ? 1 : 0) : 1,
-          time: +reqTime,
-          interval: cacheInterval,
-          data: { format, badgeData },
-        }
-        requestCache.set(cacheIndex, updatedCache)
-        if (!cachedVersionSent) {
-          const svg = makeBadge(badgeData)
-          setCacheHeadersOnResponse(ask.res, badgeData.cacheLengthSeconds)
-          makeSend(format, ask.res, end)(svg)
-        }
+        const svg = makeBadge(badgeData)
+        setCacheHeadersOnResponse(ask.res, badgeData.cacheLengthSeconds)
+        makeSend(format, ask.res, end)(svg)
       },
       cachingRequest
     )
+    // eslint-disable-next-line promise/prefer-await-to-then
     if (result && result.catch) {
+      // eslint-disable-next-line promise/prefer-await-to-then
       result.catch(err => {
         throw err
       })
@@ -285,15 +200,4 @@ function handleRequest(cacheHeaderConfig, handlerOptions) {
   }
 }
 
-function clearRequestCache() {
-  requestCache.clear()
-}
-
-module.exports = {
-  handleRequest,
-  promisify,
-  clearRequestCache,
-  // Expose for testing.
-  _requestCache: requestCache,
-  userAgent,
-}
+export { handleRequest, promisify, userAgent }

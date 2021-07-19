@@ -1,15 +1,13 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const emojic = require('emojic')
-const { optionalUrl } = require('../validators')
-const {
+import Joi from 'joi'
+import emojic from 'emojic'
+import { optionalUrl } from '../validators.js'
+import {
   queryParamSchema,
   exampleQueryParams,
   renderWebsiteStatus,
-} = require('../website-status')
-const { BaseService } = require('..')
-const trace = require('../../core/base-service/trace')
+} from '../website-status.js'
+import { BaseService } from '../index.js'
+import trace from '../../core/base-service/trace.js'
 
 const documentation = `
 <p>
@@ -35,38 +33,30 @@ const urlQueryParamSchema = Joi.object({
   url: optionalUrl.required(),
 }).required()
 
-module.exports = class Website extends BaseService {
-  static get category() {
-    return 'monitoring'
+export default class Website extends BaseService {
+  static category = 'monitoring'
+
+  static route = {
+    base: '',
+    pattern: 'website',
+    queryParamSchema: queryParamSchema.concat(urlQueryParamSchema),
   }
 
-  static get route() {
-    return {
-      base: '',
-      pattern: 'website',
-      queryParamSchema: queryParamSchema.concat(urlQueryParamSchema),
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Website',
-        namedParams: {},
-        queryParams: {
-          ...exampleQueryParams,
-          ...{ url: 'https://shields.io' },
-        },
-        staticPreview: renderWebsiteStatus({ isUp: true }),
-        documentation,
+  static examples = [
+    {
+      title: 'Website',
+      namedParams: {},
+      queryParams: {
+        ...exampleQueryParams,
+        ...{ url: 'https://shields.io' },
       },
-    ]
-  }
+      staticPreview: renderWebsiteStatus({ isUp: true }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'website',
-    }
+  static defaultBadgeData = {
+    label: 'website',
   }
 
   async _request({ url, options = {} }) {

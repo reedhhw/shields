@@ -1,8 +1,6 @@
-'use strict'
-
-const { metric } = require('../text-formatters')
-const { downloadCount } = require('../color-formatters')
-const VisualStudioMarketplaceBase = require('./visual-studio-marketplace-base')
+import { metric } from '../text-formatters.js'
+import { downloadCount } from '../color-formatters.js'
+import VisualStudioMarketplaceBase from './visual-studio-marketplace-base.js'
 
 const documentation = `
 <p>
@@ -13,39 +11,33 @@ const documentation = `
 </p>
 `
 
-module.exports = class VisualStudioMarketplaceDownloads extends VisualStudioMarketplaceBase {
-  static get category() {
-    return 'downloads'
+export default class VisualStudioMarketplaceDownloads extends VisualStudioMarketplaceBase {
+  static category = 'downloads'
+
+  static route = {
+    base: '',
+    pattern:
+      '(visual-studio-marketplace|vscode-marketplace)/:measure(d|i)/:extensionId',
   }
 
-  static get route() {
-    return {
-      base: '',
-      pattern:
-        '(visual-studio-marketplace|vscode-marketplace)/:measure(d|i)/:extensionId',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Visual Studio Marketplace Installs',
-        pattern: 'visual-studio-marketplace/i/:extensionId',
-        namedParams: { extensionId: 'ritwickdey.LiveServer' },
-        staticPreview: this.render({ measure: 'i', count: 843 }),
-        keywords: this.keywords,
-        documentation,
-      },
-      {
-        title: 'Visual Studio Marketplace Downloads',
-        pattern: 'visual-studio-marketplace/d/:extensionId',
-        namedParams: { extensionId: 'ritwickdey.LiveServer' },
-        staticPreview: this.render({ measure: 'd', count: 1239 }),
-        keywords: this.keywords,
-        documentation,
-      },
-    ]
-  }
+  static examples = [
+    {
+      title: 'Visual Studio Marketplace Installs',
+      pattern: 'visual-studio-marketplace/i/:extensionId',
+      namedParams: { extensionId: 'ritwickdey.LiveServer' },
+      staticPreview: this.render({ measure: 'i', count: 843 }),
+      keywords: this.keywords,
+      documentation,
+    },
+    {
+      title: 'Visual Studio Marketplace Downloads',
+      pattern: 'visual-studio-marketplace/d/:extensionId',
+      namedParams: { extensionId: 'ritwickdey.LiveServer' },
+      staticPreview: this.render({ measure: 'd', count: 1239 }),
+      keywords: this.keywords,
+      documentation,
+    },
+  ]
 
   static render({ measure, count }) {
     const label = measure === 'd' ? 'downloads' : 'installs'

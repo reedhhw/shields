@@ -1,15 +1,18 @@
-'use strict'
-
-const gql = require('graphql-tag')
-const Joi = require('@hapi/joi')
-const { NotFound } = require('..')
-const { GithubAuthV4Service } = require('./github-auth-service')
-const { documentation, transformErrors } = require('./github-helpers')
+import gql from 'graphql-tag'
+import Joi from 'joi'
+import { NotFound } from '../index.js'
+import { GithubAuthV4Service } from './github-auth-service.js'
+import { documentation, transformErrors } from './github-helpers.js'
 
 const greenStates = ['SUCCESS']
 const redStates = ['ERROR', 'FAILURE']
 const blueStates = ['INACTIVE']
-const otherStates = ['IN_PROGRESS', 'QUEUED', 'PENDING']
+const otherStates = ['IN_PROGRESS', 'QUEUED', 'PENDING', 'NO_STATUS']
+
+const stateToMessageMappings = {
+  IN_PROGRESS: 'in progress',
+  NO_STATUS: 'no status yet',
+}
 
 const allState = greenStates
   .concat(redStates)
@@ -39,38 +42,29 @@ const schema = Joi.object({
   }).required(),
 }).required()
 
-module.exports = class GithubDeployments extends GithubAuthV4Service {
-  static get category() {
-    return 'other'
+export default class GithubDeployments extends GithubAuthV4Service {
+  static category = 'other'
+  static route = {
+    base: 'github/deployments',
+    pattern: ':user/:repo/:environment',
   }
 
-  static get route() {
-    return {
-      base: 'github/deployments',
-      pattern: ':user/:repo/:environment',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub deployments',
-        namedParams: {
-          user: 'badges',
-          repo: 'shields',
-          environment: 'shields-staging',
-        },
-        staticPreview: this.render({
-          state: 'success',
-        }),
-        documentation,
+  static examples = [
+    {
+      title: 'GitHub deployments',
+      namedParams: {
+        user: 'badges',
+        repo: 'shields',
+        environment: 'shields-staging',
       },
-    ]
-  }
+      staticPreview: this.render({
+        state: 'success',
+      }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'state' }
-  }
+  static defaultBadgeData = { label: 'state' }
 
   static render({ state }) {
     let color
@@ -82,10 +76,8 @@ module.exports = class GithubDeployments extends GithubAuthV4Service {
       color = 'blue'
     }
 
-    let message
-    if (state === 'IN_PROGRESS') {
-      message = 'in progress'
-    } else {
+    let message = stateToMessageMappings[state]
+    if (!message) {
       message = state.toLowerCase()
     }
 
@@ -98,7 +90,7 @@ module.exports = class GithubDeployments extends GithubAuthV4Service {
   async fetch({ user, repo, environment }) {
     return this._requestGraphql({
       query: gql`
-        query($user: String!, $repo: String!, $environment: String!) {
+        query ($user: String!, $repo: String!, $environment: String!) {
           repository(owner: $user, name: $repo) {
             deployments(last: 1, environments: [$environment]) {
               nodes {
@@ -123,7 +115,7 @@ module.exports = class GithubDeployments extends GithubAuthV4Service {
     // This happens for the brief moment a deployment is created, but no
     // status is created for the deployment (yet).
     if (data.repository.deployments.nodes[0].latestStatus == null) {
-      throw new NotFound({ prettyMessage: 'deployment has no status (yet)' })
+      return { state: 'NO_STATUS' }
     }
 
     const state = data.repository.deployments.nodes[0].latestStatus.state

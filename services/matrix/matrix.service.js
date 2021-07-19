@@ -1,7 +1,5 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { BaseJsonService, InvalidParameter } = require('..')
+import Joi from 'joi'
+import { BaseJsonService, InvalidParameter } from '../index.js'
 
 const queryParamSchema = Joi.object({
   server_fqdn: Joi.string().hostname(),
@@ -52,44 +50,34 @@ const documentation = `
   </p>
   `
 
-module.exports = class Matrix extends BaseJsonService {
-  static get category() {
-    return 'chat'
+export default class Matrix extends BaseJsonService {
+  static category = 'chat'
+
+  static route = {
+    base: 'matrix',
+    pattern: ':roomAlias',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'matrix',
-      pattern: ':roomAlias',
-      queryParamSchema,
-    }
-  }
+  static examples = [
+    {
+      title: 'Matrix',
+      namedParams: { roomAlias: 'twim:matrix.org' },
+      staticPreview: this.render({ members: 42 }),
+      documentation,
+    },
+    {
+      title: 'Matrix',
+      namedParams: { roomAlias: 'twim:matrix.org' },
+      queryParams: { server_fqdn: 'matrix.org' },
+      staticPreview: this.render({ members: 42 }),
+      documentation,
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Matrix',
-        namedParams: { roomAlias: 'twim:matrix.org' },
-        staticPreview: this.render({ members: 42 }),
-        documentation,
-      },
-      {
-        title: 'Matrix',
-        namedParams: { roomAlias: 'twim:matrix.org' },
-        queryParams: { server_fqdn: 'matrix.org' },
-        staticPreview: this.render({ members: 42 }),
-        documentation,
-      },
-    ]
-  }
+  static _cacheLength = 30
 
-  static get _cacheLength() {
-    return 30
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'chat' }
-  }
+  static defaultBadgeData = { label: 'chat' }
 
   static render({ members }) {
     return {

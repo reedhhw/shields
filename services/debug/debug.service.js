@@ -1,28 +1,13 @@
-'use strict'
-
-const { NonMemoryCachingBaseService } = require('..')
+import { BaseService } from '../index.js'
 
 const serverStartTime = new Date(new Date().toGMTString())
 let bitFlip = false
 
-module.exports = class Debug extends NonMemoryCachingBaseService {
-  static get category() {
-    return 'debug'
-  }
+export default class Debug extends BaseService {
+  static category = 'debug'
+  static route = { base: 'debug', pattern: ':variant(time|starttime|flip)' }
 
-  static get route() {
-    return {
-      base: 'debug',
-      pattern: ':variant(time|starttime|flip)',
-    }
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'debug',
-      color: 'blue',
-    }
-  }
+  static defaultBadgeData = { label: 'debug', color: 'blue' }
 
   async handle({ variant }) {
     switch (variant) {

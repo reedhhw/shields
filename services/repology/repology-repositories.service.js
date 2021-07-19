@@ -1,41 +1,31 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { BaseSvgScrapingService } = require('..')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseSvgScrapingService } from '../index.js'
 
 const schema = Joi.object({
   message: nonNegativeInteger,
 }).required()
 
-module.exports = class RepologyRepositories extends BaseSvgScrapingService {
-  static get category() {
-    return 'platform-support'
+export default class RepologyRepositories extends BaseSvgScrapingService {
+  static category = 'platform-support'
+
+  static route = {
+    base: 'repology/repositories',
+    pattern: ':projectName',
   }
 
-  static get route() {
-    return {
-      base: 'repology/repositories',
-      pattern: ':projectName',
-    }
-  }
+  static examples = [
+    {
+      title: 'Repology - Repositories',
+      namedParams: { projectName: 'starship' },
+      staticPreview: this.render({ repositoryCount: '18' }),
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Repology - Repositories',
-        namedParams: { projectName: 'starship' },
-        staticPreview: this.render({ repositoryCount: '18' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'repositories',
-      color: 'blue',
-    }
+  static defaultBadgeData = {
+    label: 'repositories',
+    color: 'blue',
   }
 
   static render({ repositoryCount }) {

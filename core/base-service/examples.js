@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { pathToRegexp, compile } = require('path-to-regexp')
-const categories = require('../../services/categories')
-const coalesceBadge = require('./coalesce-badge')
-const { makeFullUrl } = require('./route')
+import Joi from 'joi'
+import { pathToRegexp, compile } from 'path-to-regexp'
+import categories from '../../services/categories.js'
+import coalesceBadge from './coalesce-badge.js'
+import { makeFullUrl } from './route.js'
 
 const optionalObjectOfKeyValues = Joi.object().pattern(
   /./,
@@ -124,12 +122,7 @@ function transformExample(inExample, index, ServiceClass) {
     documentation,
   } = validateExample(inExample, index, ServiceClass)
 
-  const {
-    text: [label, message],
-    color,
-    template: style,
-    namedLogo,
-  } = coalesceBadge(
+  const { label, message, color, style, namedLogo } = coalesceBadge(
     {},
     staticPreview,
     ServiceClass.defaultBadgeData,
@@ -160,7 +153,4 @@ function transformExample(inExample, index, ServiceClass) {
   }
 }
 
-module.exports = {
-  validateExample,
-  transformExample,
-}
+export { validateExample, transformExample }

@@ -1,33 +1,20 @@
-'use strict'
+import { currencyFromCode } from '../text-formatters.js'
+import { NotFound } from '../index.js'
+import BaseChromeWebStoreService from './chrome-web-store-base.js'
 
-const { currencyFromCode } = require('../text-formatters')
-const BaseChromeWebStoreService = require('./chrome-web-store-base')
+export default class ChromeWebStorePrice extends BaseChromeWebStoreService {
+  static category = 'funding'
+  static route = { base: 'chrome-web-store/price', pattern: ':storeId' }
 
-module.exports = class ChromeWebStorePrice extends BaseChromeWebStoreService {
-  static get category() {
-    return 'funding'
-  }
+  static examples = [
+    {
+      title: 'Chrome Web Store',
+      namedParams: { storeId: 'ogffaloegjglncjfehdfplabnoondfjo' },
+      staticPreview: this.render({ priceCurrency: 'USD', price: 0 }),
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'chrome-web-store/price',
-      pattern: ':storeId',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Chrome Web Store',
-        namedParams: { storeId: 'ogffaloegjglncjfehdfplabnoondfjo' },
-        staticPreview: this.render({ priceCurrency: 'USD', price: 0 }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'price' }
-  }
+  static defaultBadgeData = { label: 'price' }
 
   static render({ priceCurrency, price }) {
     return {
@@ -37,7 +24,12 @@ module.exports = class ChromeWebStorePrice extends BaseChromeWebStoreService {
   }
 
   async handle({ storeId }) {
-    const { priceCurrency, price } = await this.fetch({ storeId })
+    const chromeWebStore = await this.fetch({ storeId })
+    const priceCurrency = chromeWebStore.priceCurrency()
+    const price = chromeWebStore.price()
+    if (priceCurrency == null || price == null) {
+      throw new NotFound({ prettyMessage: 'not found' })
+    }
     return this.constructor.render({ priceCurrency, price })
   }
 }

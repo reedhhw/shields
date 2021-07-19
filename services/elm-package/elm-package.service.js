@@ -1,39 +1,22 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderVersionBadge } = require('../version')
-const { semver } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { renderVersionBadge } from '../version.js'
+import { semver } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({ version: semver }).required()
 
-module.exports = class ElmPackage extends BaseJsonService {
-  static get category() {
-    return 'version'
-  }
+export default class ElmPackage extends BaseJsonService {
+  static category = 'version'
+  static route = { base: 'elm-package/v', pattern: ':user/:packageName' }
+  static examples = [
+    {
+      title: 'Elm package',
+      namedParams: { user: 'elm', packageName: 'core' },
+      staticPreview: this.render({ version: '1.0.2' }),
+    },
+  ]
 
-  static get route() {
-    return {
-      base: 'elm-package/v',
-      pattern: ':user/:packageName',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Elm package',
-        namedParams: { user: 'elm', packageName: 'core' },
-        staticPreview: this.render({ version: '1.0.2' }),
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'elm package',
-    }
-  }
+  static defaultBadgeData = { label: 'elm package' }
 
   static render(props) {
     return renderVersionBadge(props)

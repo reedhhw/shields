@@ -1,40 +1,27 @@
-'use strict'
+import prettyBytes from 'pretty-bytes'
+import { BaseGithubLanguage } from './github-languages-base.js'
+import { documentation } from './github-helpers.js'
 
-const prettyBytes = require('pretty-bytes')
-const { BaseGithubLanguage } = require('./github-languages-base')
-const { documentation } = require('./github-helpers')
-
-module.exports = class GithubCodeSize extends BaseGithubLanguage {
-  static get category() {
-    return 'size'
+export default class GithubCodeSize extends BaseGithubLanguage {
+  static category = 'size'
+  static route = {
+    base: 'github/languages/code-size',
+    pattern: ':user/:repo',
   }
 
-  static get route() {
-    return {
-      base: 'github/languages/code-size',
-      pattern: ':user/:repo',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub code size in bytes',
-        namedParams: {
-          user: 'badges',
-          repo: 'shields',
-        },
-        staticPreview: this.render({ size: 1625000 }),
-        documentation,
+  static examples = [
+    {
+      title: 'GitHub code size in bytes',
+      namedParams: {
+        user: 'badges',
+        repo: 'shields',
       },
-    ]
-  }
+      staticPreview: this.render({ size: 1625000 }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'code size',
-    }
-  }
+  static defaultBadgeData = { label: 'code size' }
 
   static render({ size }) {
     return {

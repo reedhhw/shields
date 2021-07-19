@@ -1,12 +1,10 @@
-'use strict'
-
-const Camp = require('@shields_io/camp')
-const { expect } = require('chai')
-const nock = require('nock')
-const portfinder = require('portfinder')
-const got = require('../core/got-test-client')
-const { setRoutes, githubLicense } = require('./suggest')
-const GithubApiProvider = require('./github/github-api-provider')
+import Camp from '@shields_io/camp'
+import { expect } from 'chai'
+import nock from 'nock'
+import portfinder from 'portfinder'
+import got from '../core/got-test-client.js'
+import { setRoutes, githubLicense } from './suggest.js'
+import GithubApiProvider from './github/github-api-provider.js'
 
 describe('Badge suggestions', function () {
   const githubApiBaseUrl = 'https://api.github.test'
@@ -157,8 +155,7 @@ describe('Badge suggestions', function () {
             },
             {
               title: 'Twitter',
-              link:
-                'https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fatom%2Fatom',
+              link: 'https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fatom%2Fatom',
               example: {
                 pattern: '/twitter/url',
                 namedParams: {},

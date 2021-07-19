@@ -1,6 +1,4 @@
-'use strict'
-
-const { performance } = require('perf_hooks')
+import { performance } from 'perf_hooks'
 
 class MetricHelper {
   constructor({ metricInstance }, { category, serviceFamily, name }) {
@@ -11,13 +9,12 @@ class MetricHelper {
         serviceFamily,
         name,
       })
-      this.serviceResponseSizeHistogram = metricInstance.createServiceResponseSizeHistogram(
-        {
+      this.serviceResponseSizeHistogram =
+        metricInstance.createServiceResponseSizeHistogram({
           category,
           serviceFamily,
           name,
-        }
-      )
+        })
     } else {
       this.metricInstance = undefined
       this.serviceRequestCounter = undefined
@@ -60,4 +57,4 @@ const MetricNames = Object.freeze({
   SERVICE_RESPONSE_SIZE: Symbol('service-response-size'),
 })
 
-module.exports = { MetricHelper, MetricNames }
+export { MetricHelper, MetricNames }

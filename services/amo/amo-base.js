@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const keywords = ['amo', 'firefox']
 
@@ -18,9 +16,7 @@ const schema = Joi.object({
 }).required()
 
 class BaseAmoService extends BaseJsonService {
-  static get defaultBadgeData() {
-    return { label: 'mozilla add-on' }
-  }
+  static defaultBadgeData = { label: 'mozilla add-on' }
 
   async fetch({ addonId }) {
     return this._requestJson({
@@ -30,4 +26,4 @@ class BaseAmoService extends BaseJsonService {
   }
 }
 
-module.exports = { BaseAmoService, keywords }
+export { BaseAmoService, keywords }

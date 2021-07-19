@@ -1,19 +1,17 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const {
+import Joi from 'joi'
+import {
   documentation,
   testResultQueryParamSchema,
   renderTestResultBadge,
-} = require('../test-results')
-const { optionalNonNegativeInteger } = require('../validators')
-const { InvalidResponse } = require('..')
-const JenkinsBase = require('./jenkins-base')
-const {
+} from '../test-results.js'
+import { optionalNonNegativeInteger } from '../validators.js'
+import { InvalidResponse } from '../index.js'
+import JenkinsBase from './jenkins-base.js'
+import {
   buildTreeParamQueryString,
   buildUrl,
   queryParamSchema,
-} = require('./jenkins-common')
+} from './jenkins-common.js'
 
 // In the API response, the `actions` array can be empty, and when it is not empty it will contain a
 // mix of objects. Some will be empty objects, and several will not have the test count properties.
@@ -35,48 +33,38 @@ const schema = Joi.object({
     .required(),
 }).required()
 
-module.exports = class JenkinsTests extends JenkinsBase {
-  static get category() {
-    return 'build'
+export default class JenkinsTests extends JenkinsBase {
+  static category = 'build'
+
+  static route = {
+    base: 'jenkins',
+    pattern: 'tests',
+    queryParamSchema: queryParamSchema.concat(testResultQueryParamSchema),
   }
 
-  static get route() {
-    return {
-      base: 'jenkins',
-      pattern: 'tests',
-      queryParamSchema: queryParamSchema.concat(testResultQueryParamSchema),
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Jenkins tests',
-        namedParams: {},
-        queryParams: {
-          compact_message: null,
-          passed_label: 'passed',
-          failed_label: 'failed',
-          skipped_label: 'skipped',
-          jobUrl: 'https://jenkins.sqlalchemy.org/job/alembic_coverage',
-        },
-        staticPreview: this.render({
-          passed: 477,
-          failed: 2,
-          skipped: 0,
-          total: 479,
-          isCompact: false,
-        }),
-        documentation,
+  static examples = [
+    {
+      title: 'Jenkins tests',
+      namedParams: {},
+      queryParams: {
+        compact_message: null,
+        passed_label: 'passed',
+        failed_label: 'failed',
+        skipped_label: 'skipped',
+        jobUrl: 'https://jenkins.sqlalchemy.org/job/alembic_coverage',
       },
-    ]
-  }
+      staticPreview: this.render({
+        passed: 477,
+        failed: 2,
+        skipped: 0,
+        total: 479,
+        isCompact: false,
+      }),
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'tests',
-    }
-  }
+  static defaultBadgeData = { label: 'tests' }
 
   static render({
     passed,

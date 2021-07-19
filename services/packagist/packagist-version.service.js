@@ -1,16 +1,14 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { renderVersionBadge } = require('../version')
-const { compare, isStable, latest } = require('../php-version')
-const { optionalUrl } = require('../validators')
-const { NotFound, redirector } = require('..')
-const {
+import Joi from 'joi'
+import { renderVersionBadge } from '../version.js'
+import { compare, isStable, latest } from '../php-version.js'
+import { optionalUrl } from '../validators.js'
+import { NotFound, redirector } from '../index.js'
+import {
   allVersionsSchema,
   keywords,
   BasePackagistService,
   customServerDocumentationFragment,
-} = require('./packagist-base')
+} from './packagist-base.js'
 
 const packageSchema = Joi.object()
   .pattern(
@@ -34,59 +32,51 @@ const queryParamSchema = Joi.object({
 }).required()
 
 class PackagistVersion extends BasePackagistService {
-  static get category() {
-    return 'version'
+  static category = 'version'
+
+  static route = {
+    base: 'packagist/v',
+    pattern: ':user/:repo',
+    queryParamSchema,
   }
 
-  static get route() {
-    return {
-      base: 'packagist/v',
-      pattern: ':user/:repo',
-      queryParamSchema,
-    }
-  }
+  static examples = [
+    {
+      title: 'Packagist Version',
+      namedParams: {
+        user: 'symfony',
+        repo: 'symfony',
+      },
+      staticPreview: renderVersionBadge({ version: '4.2.2' }),
+      keywords,
+    },
+    {
+      title: 'Packagist Version (including pre-releases)',
+      namedParams: {
+        user: 'symfony',
+        repo: 'symfony',
+      },
+      queryParams: { include_prereleases: null },
+      staticPreview: renderVersionBadge({ version: '4.3-dev' }),
+      keywords,
+    },
+    {
+      title: 'Packagist Version (custom server)',
+      namedParams: {
+        user: 'symfony',
+        repo: 'symfony',
+      },
+      queryParams: {
+        server: 'https://packagist.org',
+      },
+      staticPreview: renderVersionBadge({ version: '4.2.2' }),
+      keywords,
+      documentation: customServerDocumentationFragment,
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Packagist Version',
-        namedParams: {
-          user: 'symfony',
-          repo: 'symfony',
-        },
-        staticPreview: renderVersionBadge({ version: '4.2.2' }),
-        keywords,
-      },
-      {
-        title: 'Packagist Version (including pre-releases)',
-        namedParams: {
-          user: 'symfony',
-          repo: 'symfony',
-        },
-        queryParams: { include_prereleases: null },
-        staticPreview: renderVersionBadge({ version: '4.3-dev' }),
-        keywords,
-      },
-      {
-        title: 'Packagist Version (custom server)',
-        namedParams: {
-          user: 'symfony',
-          repo: 'symfony',
-        },
-        queryParams: {
-          server: 'https://packagist.org',
-        },
-        staticPreview: renderVersionBadge({ version: '4.2.2' }),
-        keywords,
-        documentation: customServerDocumentationFragment,
-      },
-    ]
-  }
-
-  static get defaultBadgeData() {
-    return {
-      label: 'packagist',
-    }
+  static defaultBadgeData = {
+    label: 'packagist',
   }
 
   static render({ version }) {
@@ -129,8 +119,11 @@ class PackagistVersion extends BasePackagistService {
     }
   }
 
-  async handle({ user, repo }, { include_prereleases, server }) {
-    const includePrereleases = include_prereleases !== undefined
+  async handle(
+    { user, repo },
+    { include_prereleases: includePrereleases, server }
+  ) {
+    includePrereleases = includePrereleases !== undefined
     const json = await this.fetch({
       user,
       repo,
@@ -153,4 +146,4 @@ const PackagistVersionRedirector = redirector({
   dateAdded: new Date('2019-12-15'),
 })
 
-module.exports = { PackagistVersion, PackagistVersionRedirector }
+export { PackagistVersion, PackagistVersionRedirector }

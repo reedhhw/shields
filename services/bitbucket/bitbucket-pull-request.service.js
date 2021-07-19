@@ -1,10 +1,8 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { AuthHelper } = require('../../core/base-service/auth-helper')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger, optionalUrl } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { AuthHelper } from '../../core/base-service/auth-helper.js'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger, optionalUrl } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   size: nonNegativeInteger,
@@ -25,47 +23,35 @@ function pullRequestClassGenerator(raw) {
   const badgeSuffix = raw ? '' : ' open'
 
   return class BitbucketPullRequest extends BaseJsonService {
-    static get name() {
-      return `BitbucketPullRequest${raw ? 'Raw' : ''}`
+    static name = `BitbucketPullRequest${raw ? 'Raw' : ''}`
+    static category = 'issue-tracking'
+    static route = {
+      base: `bitbucket/${routePrefix}`,
+      pattern: `:user/:repo`,
+      queryParamSchema,
     }
 
-    static get category() {
-      return 'issue-tracking'
-    }
-
-    static get route() {
-      return {
-        base: `bitbucket/${routePrefix}`,
-        pattern: `:user/:repo`,
-        queryParamSchema,
-      }
-    }
-
-    static get examples() {
-      return [
-        {
-          title: 'Bitbucket open pull requests',
-          namedParams: {
-            user: 'atlassian',
-            repo: 'python-bitbucket',
-          },
-          staticPreview: this.render({ prs: 22 }),
+    static examples = [
+      {
+        title: 'Bitbucket open pull requests',
+        namedParams: {
+          user: 'atlassian',
+          repo: 'python-bitbucket',
         },
-        {
-          title: 'Bitbucket Server open pull requests',
-          namedParams: {
-            user: 'foo',
-            repo: 'bar',
-          },
-          queryParams: { server: 'https://bitbucket.mydomain.net' },
-          staticPreview: this.render({ prs: 42 }),
+        staticPreview: this.render({ prs: 22 }),
+      },
+      {
+        title: 'Bitbucket Server open pull requests',
+        namedParams: {
+          user: 'foo',
+          repo: 'bar',
         },
-      ]
-    }
+        queryParams: { server: 'https://bitbucket.mydomain.net' },
+        staticPreview: this.render({ prs: 42 }),
+      },
+    ]
 
-    static get defaultBadgeData() {
-      return { label: 'pull requests' }
-    }
+    static defaultBadgeData = { label: 'pull requests' }
 
     static render({ prs }) {
       return {
@@ -140,4 +126,5 @@ function pullRequestClassGenerator(raw) {
   }
 }
 
-module.exports = [true, false].map(pullRequestClassGenerator)
+export const BitbucketRawPullRequests = pullRequestClassGenerator(true)
+export const BitbucketNonRawPullRequests = pullRequestClassGenerator(false)

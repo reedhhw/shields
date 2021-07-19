@@ -1,51 +1,41 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const prettyBytes = require('pretty-bytes')
-const { nonNegativeInteger } = require('../validators')
-const {
+import Joi from 'joi'
+import prettyBytes from 'pretty-bytes'
+import { nonNegativeInteger } from '../validators.js'
+import {
   BaseVisualStudioAppCenterService,
   keywords,
   documentation,
-} = require('./visual-studio-app-center-base')
+} from './visual-studio-app-center-base.js'
 
 const schema = Joi.object({
   size: nonNegativeInteger,
 }).required()
 
-module.exports = class VisualStudioAppCenterReleasesSize extends BaseVisualStudioAppCenterService {
-  static get category() {
-    return 'size'
+export default class VisualStudioAppCenterReleasesSize extends BaseVisualStudioAppCenterService {
+  static category = 'size'
+
+  static route = {
+    base: 'visual-studio-app-center/releases/size',
+    pattern: ':owner/:app/:token',
   }
 
-  static get route() {
-    return {
-      base: 'visual-studio-app-center/releases/size',
-      pattern: ':owner/:app/:token',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Visual Studio App Center Size',
-        namedParams: {
-          owner: 'jct',
-          app: 'my-amazing-app',
-          token: 'ac70cv...',
-        },
-        staticPreview: this.render({ size: 8368844 }),
-        keywords,
-        documentation,
+  static examples = [
+    {
+      title: 'Visual Studio App Center Size',
+      namedParams: {
+        owner: 'jct',
+        app: 'my-amazing-app',
+        token: 'ac70cv...',
       },
-    ]
-  }
+      staticPreview: this.render({ size: 8368844 }),
+      keywords,
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'size',
-      color: 'blue',
-    }
+  static defaultBadgeData = {
+    label: 'size',
+    color: 'blue',
   }
 
   static render({ size }) {

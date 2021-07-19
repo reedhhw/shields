@@ -1,12 +1,10 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { ServiceTester } = require('../tester')
-const { isMetric, isMetricOverTimePeriod } = require('../test-validators')
+import Joi from 'joi'
+import { ServiceTester } from '../tester.js'
+import { isMetric, isMetricOverTimePeriod } from '../test-validators.js'
 
 const isHexpmVersion = Joi.string().regex(/^v\d+.\d+.?\d?$/)
 
-const t = (module.exports = new ServiceTester({ id: 'hexpm', title: 'Hex.pm' }))
+export const t = new ServiceTester({ id: 'hexpm', title: 'Hex.pm' })
 
 t.create('downloads per week')
   .get('/dw/cowboy.json')
@@ -23,7 +21,7 @@ t.create('downloads (zero for period)')
       .get('/api/packages/cowboy')
       .reply(200, {
         downloads: { all: 100 }, // there is no 'day' key here
-        releases: [{ version: '1.0' }],
+        latest_stable_version: '1.0',
         meta: { licenses: ['MIT'] },
       })
   )
@@ -58,7 +56,7 @@ t.create('license (multiple licenses)')
       .get('/api/packages/cowboy')
       .reply(200, {
         downloads: { all: 100 },
-        releases: [{ version: '1.0' }],
+        latest_stable_version: '1.0',
         meta: { licenses: ['GPLv2', 'MIT'] },
       })
   )
@@ -75,7 +73,7 @@ t.create('license (no license)')
       .get('/api/packages/cowboy')
       .reply(200, {
         downloads: { all: 100 },
-        releases: [{ version: '1.0' }],
+        latest_stable_version: '1.0',
         meta: { licenses: [] },
       })
   )

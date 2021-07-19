@@ -1,8 +1,6 @@
-'use strict'
-
-const { addv } = require('../text-formatters')
-const { version: versionColor } = require('../color-formatters')
-const BaseWordpress = require('./wordpress-base')
+import { addv } from '../text-formatters.js'
+import { version as versionColor } from '../color-formatters.js'
+import BaseWordpress from './wordpress-base.js'
 
 function VersionForExtensionType(extensionType) {
   const { capt, exampleSlug } = {
@@ -17,34 +15,24 @@ function VersionForExtensionType(extensionType) {
   }[extensionType]
 
   return class WordpressVersion extends BaseWordpress {
-    static get name() {
-      return `Wordpress${capt}Version`
+    static name = `Wordpress${capt}Version`
+
+    static category = 'version'
+
+    static route = {
+      base: `wordpress/${extensionType}/v`,
+      pattern: ':slug',
     }
 
-    static get category() {
-      return 'version'
-    }
+    static examples = [
+      {
+        title: `WordPress ${capt} Version`,
+        namedParams: { slug: exampleSlug },
+        staticPreview: this.render({ version: 2.5 }),
+      },
+    ]
 
-    static get route() {
-      return {
-        base: `wordpress/${extensionType}/v`,
-        pattern: ':slug',
-      }
-    }
-
-    static get examples() {
-      return [
-        {
-          title: `WordPress ${capt} Version`,
-          namedParams: { slug: exampleSlug },
-          staticPreview: this.render({ version: 2.5 }),
-        },
-      ]
-    }
-
-    static get defaultBadgeData() {
-      return { label: extensionType }
-    }
+    static defaultBadgeData = { label: extensionType }
 
     static render({ version }) {
       return {
@@ -63,4 +51,4 @@ function VersionForExtensionType(extensionType) {
   }
 }
 
-module.exports = ['theme', 'plugin'].map(VersionForExtensionType)
+export default ['theme', 'plugin'].map(VersionForExtensionType)

@@ -1,8 +1,6 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { nonNegativeInteger } = require('../validators')
-const { BaseJsonService } = require('..')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import { BaseJsonService } from '../index.js'
 
 const schema = Joi.object({
   presence_count: nonNegativeInteger,
@@ -24,44 +22,32 @@ const documentation = `
 <iframe src="https://player.vimeo.com/video/364220040" width="640" height="210" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
 `
 
-module.exports = class Discord extends BaseJsonService {
-  static get category() {
-    return 'chat'
+export default class Discord extends BaseJsonService {
+  static category = 'chat'
+
+  static route = {
+    base: 'discord',
+    pattern: ':serverId',
   }
 
-  static get route() {
-    return {
-      base: 'discord',
-      pattern: ':serverId',
-    }
+  static auth = {
+    passKey: 'discord_bot_token',
+    authorizedOrigins: ['https://discord.com'],
+    isRequired: false,
   }
 
-  static get auth() {
-    return {
-      passKey: 'discord_bot_token',
-      authorizedOrigins: ['https://discord.com'],
-      isRequired: false,
-    }
-  }
+  static examples = [
+    {
+      title: 'Discord',
+      namedParams: { serverId: '102860784329052160' },
+      staticPreview: this.render({ members: 23 }),
+      documentation,
+    },
+  ]
 
-  static get examples() {
-    return [
-      {
-        title: 'Discord',
-        namedParams: { serverId: '102860784329052160' },
-        staticPreview: this.render({ members: 23 }),
-        documentation,
-      },
-    ]
-  }
+  static _cacheLength = 30
 
-  static get _cacheLength() {
-    return 30
-  }
-
-  static get defaultBadgeData() {
-    return { label: 'chat' }
-  }
+  static defaultBadgeData = { label: 'chat' }
 
   static render({ members }) {
     return {

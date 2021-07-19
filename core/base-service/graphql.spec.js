@@ -1,11 +1,9 @@
-'use strict'
+import { expect } from 'chai'
+import gql from 'graphql-tag'
+import { print } from 'graphql/language/printer.js'
+import { mergeQueries } from './graphql.js'
 
-const { expect } = require('chai')
-const gql = require('graphql-tag')
-const { print } = require('graphql/language/printer')
-const { mergeQueries } = require('./graphql')
-
-require('../register-chai-plugins.spec')
+import '../register-chai-plugins.spec.js'
 
 describe('mergeQueries function', function () {
   it('merges valid gql queries', function () {
@@ -13,7 +11,7 @@ describe('mergeQueries function', function () {
       print(
         mergeQueries(
           gql`
-            query($param: String!) {
+            query ($param: String!) {
               foo(param: $param) {
                 bar
               }
@@ -29,7 +27,7 @@ describe('mergeQueries function', function () {
       print(
         mergeQueries(
           gql`
-            query($param: String!) {
+            query ($param: String!) {
               foo(param: $param) {
                 bar
               }

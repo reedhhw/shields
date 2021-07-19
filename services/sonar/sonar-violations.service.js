@@ -1,14 +1,12 @@
-'use strict'
-
-const { colorScale } = require('../color-formatters')
-const { metric } = require('../text-formatters')
-const SonarBase = require('./sonar-base')
-const {
+import { colorScale } from '../color-formatters.js'
+import { metric } from '../text-formatters.js'
+import SonarBase from './sonar-base.js'
+import {
   getLabel,
   documentation,
   keywords,
   queryParamWithFormatSchema,
-} = require('./sonar-helpers')
+} from './sonar-helpers.js'
 
 const violationsColorScale = colorScale(
   [1, 2, 3, 5],
@@ -23,68 +21,60 @@ const violationCategoryColorMap = {
   info_violations: 'green',
 }
 
-module.exports = class SonarViolations extends SonarBase {
-  static get category() {
-    return 'analysis'
+export default class SonarViolations extends SonarBase {
+  static category = 'analysis'
+
+  static route = {
+    base: 'sonar',
+    pattern:
+      ':metric(violations|blocker_violations|critical_violations|major_violations|minor_violations|info_violations)/:component',
+    queryParamSchema: queryParamWithFormatSchema,
   }
 
-  static get route() {
-    return {
-      base: 'sonar',
-      pattern:
-        ':metric(violations|blocker_violations|critical_violations|major_violations|minor_violations|info_violations)/:component',
-      queryParamSchema: queryParamWithFormatSchema,
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Sonar Violations (short format)',
-        namedParams: {
-          component: 'swellaby:azdo-shellcheck',
-          metric: 'violations',
-        },
-        queryParams: {
-          server: 'https://sonarcloud.io',
-          format: 'short',
-          sonarVersion: '4.2',
-        },
-        staticPreview: this.render({
-          violations: 0,
-          metricName: 'violations',
-          format: 'short',
-        }),
-        keywords,
-        documentation,
+  static examples = [
+    {
+      title: 'Sonar Violations (short format)',
+      namedParams: {
+        component: 'swellaby:azdo-shellcheck',
+        metric: 'violations',
       },
-      {
-        title: 'Sonar Violations (long format)',
-        namedParams: {
-          component: 'org.ow2.petals:petals-se-ase',
-          metric: 'violations',
-        },
-        queryParams: {
-          server: 'http://sonar.petalslink.com',
-          format: 'long',
-        },
-        staticPreview: this.render({
-          violations: {
-            info_violations: 2,
-            minor_violations: 1,
-          },
-          metricName: 'violations',
-          format: 'long',
-        }),
-        keywords,
-        documentation,
+      queryParams: {
+        server: 'https://sonarcloud.io',
+        format: 'short',
+        sonarVersion: '4.2',
       },
-    ]
-  }
+      staticPreview: this.render({
+        violations: 0,
+        metricName: 'violations',
+        format: 'short',
+      }),
+      keywords,
+      documentation,
+    },
+    {
+      title: 'Sonar Violations (long format)',
+      namedParams: {
+        component: 'org.ow2.petals:petals-se-ase',
+        metric: 'violations',
+      },
+      queryParams: {
+        server: 'http://sonar.petalslink.com',
+        format: 'long',
+      },
+      staticPreview: this.render({
+        violations: {
+          info_violations: 2,
+          minor_violations: 1,
+        },
+        metricName: 'violations',
+        format: 'long',
+      }),
+      keywords,
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'violations' }
-  }
+  static defaultBadgeData = { label: 'violations' }
 
   static renderLongViolationsBadge(violations) {
     if (violations.violations === 0) {

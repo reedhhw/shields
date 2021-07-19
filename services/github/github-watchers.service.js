@@ -1,59 +1,49 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { metric } = require('../text-formatters')
-const { nonNegativeInteger } = require('../validators')
-const { GithubAuthV3Service } = require('./github-auth-service')
-const { documentation, errorMessagesFor } = require('./github-helpers')
+import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { nonNegativeInteger } from '../validators.js'
+import { GithubAuthV3Service } from './github-auth-service.js'
+import { documentation, errorMessagesFor } from './github-helpers.js'
 
 const schema = Joi.object({
   subscribers_count: nonNegativeInteger,
 }).required()
 
-module.exports = class GithubWatchers extends GithubAuthV3Service {
-  static get category() {
-    return 'social'
+export default class GithubWatchers extends GithubAuthV3Service {
+  static category = 'social'
+
+  static route = {
+    base: 'github/watchers',
+    pattern: ':user/:repo',
   }
 
-  static get route() {
-    return {
-      base: 'github/watchers',
-      pattern: ':user/:repo',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'GitHub watchers',
-        namedParams: {
-          user: 'badges',
-          repo: 'shields',
-        },
-        // TODO: This is currently a literal, as `staticPreview` doesn't
-        // support `link`.
-        staticPreview: {
-          label: 'Watch',
-          message: '96',
-          style: 'social',
-        },
-        queryParams: { label: 'Watch' },
-        documentation,
+  static examples = [
+    {
+      title: 'GitHub watchers',
+      namedParams: {
+        user: 'badges',
+        repo: 'shields',
       },
-    ]
-  }
+      // TODO: This is currently a literal, as `staticPreview` doesn't
+      // support `link`.
+      staticPreview: {
+        label: 'Watch',
+        message: '96',
+        style: 'social',
+      },
+      queryParams: { label: 'Watch' },
+      documentation,
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return {
-      label: 'watchers',
-      namedLogo: 'github',
-    }
+  static defaultBadgeData = {
+    label: 'watchers',
+    namedLogo: 'github',
   }
 
   static render({ watchers, user, repo }) {
     return {
       message: metric(watchers),
-      color: '4183C4',
+      color: 'blue',
       link: [
         `https://github.com/${user}/${repo}`,
         `https://github.com/${user}/${repo}/watchers`,

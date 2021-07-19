@@ -1,24 +1,15 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { expect } = require('chai')
-const sinon = require('sinon')
-const BaseYamlService = require('./base-yaml')
+import Joi from 'joi'
+import { expect } from 'chai'
+import sinon from 'sinon'
+import BaseYamlService from './base-yaml.js'
 
 const dummySchema = Joi.object({
   requiredString: Joi.string().required(),
 }).required()
 
 class DummyYamlService extends BaseYamlService {
-  static get category() {
-    return 'cat'
-  }
-
-  static get route() {
-    return {
-      base: 'foo',
-    }
-  }
+  static category = 'cat'
+  static route = { base: 'foo' }
 
   async handle() {
     const { requiredString } = await this._requestYaml({

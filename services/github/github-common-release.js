@@ -1,11 +1,16 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { latest } = require('../version')
-const { NotFound } = require('..')
-const { errorMessagesFor } = require('./github-helpers')
+import Joi from 'joi'
+import { nonNegativeInteger } from '../validators.js'
+import { latest } from '../version.js'
+import { NotFound } from '../index.js'
+import { errorMessagesFor } from './github-helpers.js'
 
 const releaseInfoSchema = Joi.object({
+  assets: Joi.array()
+    .items({
+      name: Joi.string().required(),
+      download_count: nonNegativeInteger,
+    })
+    .required(),
   tag_name: Joi.string().required(),
   prerelease: Joi.boolean().required(),
 }).required()
@@ -42,16 +47,11 @@ async function fetchReleases(serviceInstance, { user, repo }) {
 
 function getLatestRelease({ releases, sort, includePrereleases }) {
   if (sort === 'semver') {
-    const latestRelease = latest(
+    const latestTagName = latest(
       releases.map(release => release.tag_name),
-      {
-        pre: includePrereleases,
-      }
+      { pre: includePrereleases }
     )
-    const kvpairs = Object.assign(
-      ...releases.map(release => ({ [release.tag_name]: release.prerelease }))
-    )
-    return { tag_name: latestRelease, prerelease: kvpairs[latestRelease] }
+    return releases.find(({ tag_name: tagName }) => tagName === latestTagName)
   }
 
   if (!includePrereleases) {
@@ -94,8 +94,5 @@ async function fetchLatestRelease(
   return latestRelease
 }
 
-module.exports = {
-  fetchLatestRelease,
-  queryParamSchema,
-  _getLatestRelease: getLatestRelease, // currently only used for tests
-}
+export { fetchLatestRelease, queryParamSchema }
+export const _getLatestRelease = getLatestRelease // currently only used for tests

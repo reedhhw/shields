@@ -1,13 +1,11 @@
-'use strict'
-
-const Joi = require('@hapi/joi')
-const { starRating } = require('../text-formatters')
-const { colorScale } = require('../color-formatters')
-const JetbrainsBase = require('./jetbrains-base')
+import Joi from 'joi'
+import { starRating } from '../text-formatters.js'
+import { colorScale } from '../color-formatters.js'
+import JetbrainsBase from './jetbrains-base.js'
 
 const pluginRatingColor = colorScale([2, 3, 4])
 
-const schema = Joi.object({
+const intelliJschema = Joi.object({
   'plugin-repository': Joi.object({
     category: Joi.object({
       'idea-plugin': Joi.array()
@@ -23,48 +21,44 @@ const schema = Joi.object({
   }).required(),
 }).required()
 
-module.exports = class JetbrainsRating extends JetbrainsBase {
-  static get category() {
-    return 'rating'
+const jetbrainsSchema = Joi.object({
+  meanRating: Joi.number().min(0).required(),
+}).required()
+
+export default class JetbrainsRating extends JetbrainsBase {
+  static category = 'rating'
+
+  static route = {
+    base: 'jetbrains/plugin/r',
+    pattern: ':format(rating|stars)/:pluginId',
   }
 
-  static get route() {
-    return {
-      base: 'jetbrains/plugin/r',
-      pattern: ':format(rating|stars)/:pluginId',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'JetBrains IntelliJ Plugins',
-        pattern: 'rating/:pluginId',
-        namedParams: {
-          pluginId: '11941-automatic-power-saver',
-        },
-        staticPreview: this.render({
-          rating: '4.5',
-          format: 'rating',
-        }),
+  static examples = [
+    {
+      title: 'JetBrains Plugins',
+      pattern: 'rating/:pluginId',
+      namedParams: {
+        pluginId: '11941',
       },
-      {
-        title: 'JetBrains IntelliJ Plugins',
-        pattern: 'stars/:pluginId',
-        namedParams: {
-          pluginId: '11941-automatic-power-saver',
-        },
-        staticPreview: this.render({
-          rating: '4.5',
-          format: 'stars',
-        }),
+      staticPreview: this.render({
+        rating: '4.5',
+        format: 'rating',
+      }),
+    },
+    {
+      title: 'JetBrains Plugins',
+      pattern: 'stars/:pluginId',
+      namedParams: {
+        pluginId: '11941',
       },
-    ]
-  }
+      staticPreview: this.render({
+        rating: '4.5',
+        format: 'stars',
+      }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'rating' }
-  }
+  static defaultBadgeData = { label: 'rating' }
 
   static render({ rating, format }) {
     const message =
@@ -78,9 +72,26 @@ module.exports = class JetbrainsRating extends JetbrainsBase {
   }
 
   async handle({ format, pluginId }) {
-    const pluginData = await this.fetchPackageData({ pluginId, schema })
-    const pluginRating =
-      pluginData['plugin-repository'].category['idea-plugin'][0].rating
-    return this.constructor.render({ rating: pluginRating, format })
+    let rating
+    if (this.constructor._isLegacyPluginId(pluginId)) {
+      const intelliJPluginData = await this.fetchIntelliJPluginData({
+        pluginId,
+        schema: intelliJschema,
+      })
+      rating =
+        intelliJPluginData['plugin-repository'].category['idea-plugin'][0]
+          .rating
+    } else {
+      const jetbrainsPluginData = await this._requestJson({
+        schema: jetbrainsSchema,
+        url: `https://plugins.jetbrains.com/api/plugins/${this.constructor._cleanPluginId(
+          pluginId
+        )}/rating`,
+        errorMessages: { 400: 'not found' },
+      })
+      rating = jetbrainsPluginData.meanRating
+    }
+
+    return this.constructor.render({ rating, format })
   }
 }

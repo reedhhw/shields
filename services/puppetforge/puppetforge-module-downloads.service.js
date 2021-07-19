@@ -1,37 +1,27 @@
-'use strict'
+import { downloadCount } from '../color-formatters.js'
+import { metric } from '../text-formatters.js'
+import { BasePuppetForgeModulesService } from './puppetforge-base.js'
 
-const { downloadCount } = require('../color-formatters')
-const { metric } = require('../text-formatters')
-const { BasePuppetForgeModulesService } = require('./puppetforge-base')
+export default class PuppetforgeModuleDownloads extends BasePuppetForgeModulesService {
+  static category = 'downloads'
 
-module.exports = class PuppetforgeModuleDownloads extends BasePuppetForgeModulesService {
-  static get category() {
-    return 'downloads'
+  static route = {
+    base: 'puppetforge/dt',
+    pattern: ':user/:moduleName',
   }
 
-  static get route() {
-    return {
-      base: 'puppetforge/dt',
-      pattern: ':user/:moduleName',
-    }
-  }
-
-  static get examples() {
-    return [
-      {
-        title: 'Puppet Forge downloads',
-        namedParams: {
-          user: 'camptocamp',
-          moduleName: 'openldap',
-        },
-        staticPreview: this.render({ downloads: 720000 }),
+  static examples = [
+    {
+      title: 'Puppet Forge downloads',
+      namedParams: {
+        user: 'camptocamp',
+        moduleName: 'openldap',
       },
-    ]
-  }
+      staticPreview: this.render({ downloads: 720000 }),
+    },
+  ]
 
-  static get defaultBadgeData() {
-    return { label: 'downloads' }
-  }
+  static defaultBadgeData = { label: 'downloads' }
 
   static render({ downloads }) {
     return {

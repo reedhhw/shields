@@ -1,32 +1,12 @@
-'use strict'
-
-const { expect } = require('chai')
-const sinon = require('sinon')
-const Camp = require('@shields_io/camp')
-const portfinder = require('portfinder')
-const serverSecrets = require('../../../lib/server-secrets')
-const got = require('../../../core/got-test-client')
-const GithubApiProvider = require('../github-api-provider')
-const { setRoutes } = require('./admin')
+import { expect } from 'chai'
+import Camp from '@shields_io/camp'
+import portfinder from 'portfinder'
+import got from '../../../core/got-test-client.js'
+import GithubApiProvider from '../github-api-provider.js'
+import { setRoutes } from './admin.js'
 
 describe('GitHub admin route', function () {
-  const validCredentials = {
-    username: '',
-    password: '7'.repeat(40),
-  }
-
-  let sandbox
-  beforeEach(function () {
-    sandbox = sinon.createSandbox()
-    // Make this work when there is no `shields_secret` defined.
-    serverSecrets.shields_secret = undefined
-    sandbox
-      .stub(serverSecrets, 'shields_secret')
-      .value(validCredentials.password)
-  })
-  afterEach(function () {
-    sandbox.restore()
-  })
+  const shieldsSecret = '7'.repeat(40)
 
   let port, baseUrl
   before(async function () {
@@ -48,31 +28,44 @@ describe('GitHub admin route', function () {
 
   before(function () {
     const apiProvider = new GithubApiProvider({ withPooling: true })
-    setRoutes(apiProvider, camp)
+    setRoutes({ shieldsSecret }, { apiProvider, server: camp })
   })
 
   context('the password is correct', function () {
     it('returns a valid JSON response', async function () {
-      const { username, password } = validCredentials
-      const { statusCode, body } = await got(`${baseUrl}/$github-auth/tokens`, {
-        username,
-        password,
-        responseType: 'json',
-      })
+      const { statusCode, body, headers } = await got(
+        `${baseUrl}/$github-auth/tokens`,
+        {
+          username: '',
+          password: shieldsSecret,
+          responseType: 'json',
+        }
+      )
       expect(statusCode).to.equal(200)
       expect(body).to.be.ok
+      expect(headers['cache-control']).to.equal('private')
     })
   })
 
   // Disabled because this code isn't modified often and the test is very
-  // slow. I wasn't able to make this work with fake timers:
+  // slow. To run it, run `SLOW=true npm run test:core`
+  //
+  // I wasn't able to make this work with fake timers:
   // https://github.com/sinonjs/sinon/issues/1739
-  // context('the password is missing', function() {
-  //   it('returns the expected message', async function() {
-  //     this.timeout(11000)
-  //     const res = await fetch(`${baseUrl}/$github-auth/tokens`)
-  //     expect(res.ok).to.be.true
-  //     expect(await res.text()).to.equal('"Invalid secret."')
-  //   })
-  // })
+  if (process.env.SLOW) {
+    context('the password is missing', function () {
+      it('returns the expected message', async function () {
+        this.timeout(11000)
+        const { statusCode, body, headers } = await got(
+          `${baseUrl}/$github-auth/tokens`,
+          {
+            throwHttpErrors: false,
+          }
+        )
+        expect(statusCode).to.equal(401)
+        expect(body).to.equal('"Invalid secret."')
+        expect(headers['cache-control']).to.equal('private')
+      })
+    })
+  }
 })
