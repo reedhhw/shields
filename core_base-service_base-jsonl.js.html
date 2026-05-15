@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: services/endpoint-common.js</title>
+    <title>JSDoc: Source: core/base-service/base-jsonl.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: services/endpoint-common.js</h1>
+    <h1 class="page-title">Source: core/base-service/base-jsonl.js</h1>
 
     
 
@@ -27,118 +27,87 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Common functions and utilities for tasks related to endpoint badges.
- *
  * @module
  */
 
-import Joi from 'joi'
-import validate from '../core/base-service/validate.js'
-import { InvalidResponse } from './index.js'
-
-const optionalStringWhenNamedLogoPresent = Joi.alternatives().conditional(
-  'namedLogo',
-  {
-    is: Joi.string().required(),
-    then: Joi.string(),
-  },
-)
-
-const optionalNumberWhenAnyLogoPresent = Joi.alternatives()
-  .conditional('namedLogo', { is: Joi.string().required(), then: Joi.number() })
-  .conditional('logoSvg', { is: Joi.string().required(), then: Joi.number() })
+import BaseService from './base.js'
+import { parseJsonl } from './jsonl.js'
 
 /**
- * Joi schema for validating endpoint.
+ * Services which query a JSONL endpoint should extend BaseJsonlService
  *
- * @type {Joi}
+ * @abstract
  */
-const endpointSchema = Joi.object({
-  schemaVersion: 1,
-  label: Joi.string().allow('').required(),
-  message: Joi.string().required(),
-  color: Joi.string(),
-  labelColor: Joi.string(),
-  isError: Joi.boolean().default(false),
-  namedLogo: Joi.string(),
-  logoSvg: Joi.string(),
-  logoColor: optionalStringWhenNamedLogoPresent,
-  logoSize: optionalStringWhenNamedLogoPresent,
-  style: Joi.string(),
-  cacheSeconds: Joi.number().integer().min(0),
-  /*
-  Retained for legacy compatibility
-  Although this does nothing,
-  passing it should not throw an error
-  */
-  logoPosition: optionalNumberWhenAnyLogoPresent,
-  logoWidth: optionalNumberWhenAnyLogoPresent,
-})
-  // `namedLogo` or `logoSvg`; not both.
-  .oxor('namedLogo', 'logoSvg')
-  .required()
+class BaseJsonlService extends BaseService {
+  /**
+   * Parse data from a JSONL endpoint
+   *
+   * @param {string} buffer JSONL response from upstream API
+   * @returns {object[]} Parsed response
+   */
+  _parseJsonl(buffer) {
+    return parseJsonl(buffer)
+  }
 
-/**
- * Strictly validate the data according to the endpoint schema.
- * This rejects unknown/invalid keys.
- * Optionally it prints those keys in the message to provide detailed feedback.
- *
- * @param {object} data Object containing the data for validation
- * @param {object} attrs Refer to individual attributes
- * @param {string} [attrs.prettyErrorMessage] If provided then error message is set to this value
- * @param {boolean} [attrs.includeKeys] If true then includes error details in error message, defaults to false
- * @throws {InvalidResponse|Error} Error if Joi validation fails due to invalid or no schema
- * @returns {object} Value if Joi validation is success
- */
-function validateEndpointData(
-  data,
-  { prettyErrorMessage = 'invalid response data', includeKeys = false } = {},
-) {
-  return validate(
-    {
-      ErrorClass: InvalidResponse,
-      prettyErrorMessage,
-      includeKeys,
-      traceErrorMessage: 'Response did not match schema',
-      traceSuccessMessage: 'Response after validation',
-      allowAndStripUnknownKeys: false,
-    },
-    data,
-    endpointSchema,
-  )
-}
+  static headers = {
+    Accept: 'application/jsonl, application/x-ndjson, text/plain',
+  }
 
-const anySchema = Joi.any()
-
-/**
- * Fetches data from the endpoint and validates the data.
- *
- * @param {object} serviceInstance Instance of Endpoint class
- * @param {object} attrs Refer to individual attributes
- * @param {string} attrs.url Endpoint URL
- * @param {object} attrs.httpErrors Object containing error messages for different error codes
- * @param {string} attrs.validationPrettyErrorMessage If provided then the error message is set to this value
- * @param {boolean} attrs.includeKeys If true then includes error details in error message
- * @returns {object} Data fetched from endpoint
- */
-async function fetchEndpointData(
-  serviceInstance,
-  { url, httpErrors, validationPrettyErrorMessage, includeKeys },
-) {
-  const json = await serviceInstance._requestJson({
-    schema: anySchema,
+  /**
+   * Request data from an upstream API serving JSONL,
+   * parse it line-by-line and validate each entry against a schema
+   *
+   * @param {object} attrs Refer to individual attrs
+   * @param {Joi} attrs.schema Joi schema to validate each response line against
+   * @param {string} attrs.url URL to request
+   * @param {object} [attrs.options={}] Options to pass to got. See
+   *    [documentation](https://github.com/sindresorhus/got/blob/main/documentation/2-options.md)
+   * @param {object} [attrs.httpErrors={}] Key-value map of status codes
+   *    and custom error messages e.g: `{ 404: 'package not found' }`.
+   *    This can be used to extend or override the
+   *    [default](https://github.com/badges/shields/blob/master/core/base-service/check-error-response.js#L5)
+   * @param {object} [attrs.systemErrors={}] Key-value map of got network exception codes
+   *    and an object of params to pass when we construct an Inaccessible exception object
+   *    e.g: `{ ECONNRESET: { prettyMessage: 'connection reset' } }`.
+   *    See {@link https://github.com/sindresorhus/got/blob/main/documentation/7-retry.md#errorcodes got error codes}
+   *    for allowed keys
+   *    and {@link module:core/base-service/errors~RuntimeErrorProps} for allowed values
+   * @param {number[]} [attrs.logErrors=[429]] An array of http error codes
+   *    that will be logged (to sentry, if configured).
+   * @param {string} [attrs.prettyErrorMessage='invalid response data']
+   *    Error message to surface when schema validation fails.
+   * @returns {object[]} Parsed response
+   * @see https://github.com/sindresorhus/got/blob/main/documentation/2-options.md
+   */
+  async _requestJsonl({
+    schema,
     url,
-    httpErrors,
-    logErrors: [],
-    options: { decompress: true, timeout: { request: 3500 } },
-  })
-  return validateEndpointData(json, {
-    prettyErrorMessage: validationPrettyErrorMessage,
-    includeKeys,
-  })
+    options = {},
+    httpErrors = {},
+    systemErrors = {},
+    logErrors = [429],
+    prettyErrorMessage = 'invalid response data',
+  }) {
+    const mergedOptions = {
+      ...{ headers: this.constructor.headers },
+      ...options,
+    }
+    const { buffer } = await this._request({
+      url,
+      options: mergedOptions,
+      httpErrors,
+      systemErrors,
+      logErrors,
+    })
+    const jsonl = this._parseJsonl(buffer)
+
+    return jsonl.map(line =>
+      this.constructor._validate(line, schema, { prettyErrorMessage }),
+    )
+  }
 }
 
-export { validateEndpointData, fetchEndpointData }
+export default BaseJsonlService
 </code></pre>
         </article>
     </section>
