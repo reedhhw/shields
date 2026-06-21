@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: core/service-test-runner/runner.js</title>
+    <title>JSDoc: Source: core/base-service/json.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: core/service-test-runner/runner.js</h1>
+    <h1 class="page-title">Source: core/base-service/json.js</h1>
 
     
 
@@ -26,82 +26,37 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module
- */
-
-import { loadTesters } from '../base-service/loader.js'
+            <pre class="prettyprint source linenums"><code>// See available emoji at http://emoji.muan.co/
+import emojic from 'emojic'
+import { InvalidResponse } from './errors.js'
+import trace from './trace.js'
 
 /**
- * Load a collection of ServiceTester objects and register them with Mocha.
+ * Parse a JSON response buffer. Throws an `InvalidResponse` error when the
+ * JSON is unparseable.
+ *
+ * @param {string|Buffer} buffer - The raw response body.
+ * @returns {object|Array} The parsed JSON value.
  */
-class Runner {
-  constructor({ baseUrl, skipIntercepted, retry }) {
-    this.baseUrl = baseUrl
-    this.skipIntercepted = skipIntercepted
-    this.retry = retry
-  }
-
-  /**
-   * Function to invoke before each test. This is a stub which can be
-   * overridden on instances.
-   */
-  beforeEach() {}
-
-  /**
-   * Prepare the runner by loading up all the ServiceTester objects.
-   */
-  async prepare() {
-    this.testers = (await loadTesters()).flatMap(testerModule =>
-      Object.values(testerModule),
-    )
-    this.testers.forEach(tester => {
-      tester.beforeEach = () => {
-        this.beforeEach()
-      }
+function parseJson(buffer) {
+  const logTrace = (...args) => trace.logTrace('fetch', ...args)
+  let json
+  try {
+    json = JSON.parse(buffer)
+  } catch (err) {
+    logTrace(emojic.dart, 'Response JSON (unparseable)', buffer)
+    throw new InvalidResponse({
+      prettyMessage: 'unparseable json response',
+      underlyingError: err,
     })
   }
-
-  _testersForService(service) {
-    return this.testers.filter(t => t.id.toLowerCase().startsWith(service))
-  }
-
-  /**
-   * Limit the test run to the specified services.
-   *
-   * @param {string[]} services An array of service id prefixes to run
-   */
-  only(services) {
-    const normalizedServices = new Set(services.map(v => v.toLowerCase()))
-
-    const missingServices = []
-    normalizedServices.forEach(service => {
-      const testers = this._testersForService(service)
-
-      if (testers.length === 0) {
-        missingServices.push(service)
-      }
-
-      testers.forEach(tester => {
-        tester.only()
-      })
-    })
-
-    // Throw at the end, to provide a better error message.
-    if (missingServices.length > 0) {
-      throw Error(`Unknown services: ${missingServices.join(', ')}`)
-    }
-  }
-
-  /**
-   * Register the tests with Mocha.
-   */
-  toss() {
-    const { testers, baseUrl, skipIntercepted, retry } = this
-    testers.forEach(tester => tester.toss({ baseUrl, skipIntercepted, retry }))
-  }
+  logTrace(emojic.dart, 'Response JSON (before validation)', json, {
+    deep: true,
+  })
+  return json
 }
-export default Runner
+
+export { parseJson }
 </code></pre>
         </article>
     </section>

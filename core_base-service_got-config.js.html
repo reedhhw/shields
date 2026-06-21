@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: core/service-test-runner/runner.js</title>
+    <title>JSDoc: Source: core/base-service/got-config.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: core/service-test-runner/runner.js</h1>
+    <h1 class="page-title">Source: core/base-service/got-config.js</h1>
 
     
 
@@ -26,82 +26,40 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module
- */
+            <pre class="prettyprint source linenums"><code>import configModule from 'config'
+import Joi from 'joi'
+import { fileSizeBytes } from '../../services/validators.js'
 
-import { loadTesters } from '../base-service/loader.js'
+const schema = Joi.object({
+  fetchLimitBytes: fileSizeBytes,
+  userAgentBase: Joi.string().required(),
+}).required()
+const config = configModule.util.toObject()
+const publicConfig = Joi.attempt(config.public, schema, { allowUnknown: true })
+
+const fetchLimitBytes = publicConfig.fetchLimitBytes
 
 /**
- * Load a collection of ServiceTester objects and register them with Mocha.
+ * Build the User-Agent string for outgoing HTTP requests. Incorporates the
+ * configured base name and, when available, a version from the deployment
+ * environment (Docker image version or Heroku slug commit).
+ *
+ * @param {string} [userAgentBase] - Base name for the user-agent. Defaults to
+ *    the configured `public.userAgentBase`.
+ * @returns {string} Formatted user-agent string (e.g. `shields/abc1234`).
  */
-class Runner {
-  constructor({ baseUrl, skipIntercepted, retry }) {
-    this.baseUrl = baseUrl
-    this.skipIntercepted = skipIntercepted
-    this.retry = retry
+function getUserAgent(userAgentBase = publicConfig.userAgentBase) {
+  let version = 'dev'
+  if (process.env.DOCKER_SHIELDS_VERSION) {
+    version = process.env.DOCKER_SHIELDS_VERSION
   }
-
-  /**
-   * Function to invoke before each test. This is a stub which can be
-   * overridden on instances.
-   */
-  beforeEach() {}
-
-  /**
-   * Prepare the runner by loading up all the ServiceTester objects.
-   */
-  async prepare() {
-    this.testers = (await loadTesters()).flatMap(testerModule =>
-      Object.values(testerModule),
-    )
-    this.testers.forEach(tester => {
-      tester.beforeEach = () => {
-        this.beforeEach()
-      }
-    })
+  if (process.env.HEROKU_SLUG_COMMIT) {
+    version = process.env.HEROKU_SLUG_COMMIT.substring(0, 7)
   }
-
-  _testersForService(service) {
-    return this.testers.filter(t => t.id.toLowerCase().startsWith(service))
-  }
-
-  /**
-   * Limit the test run to the specified services.
-   *
-   * @param {string[]} services An array of service id prefixes to run
-   */
-  only(services) {
-    const normalizedServices = new Set(services.map(v => v.toLowerCase()))
-
-    const missingServices = []
-    normalizedServices.forEach(service => {
-      const testers = this._testersForService(service)
-
-      if (testers.length === 0) {
-        missingServices.push(service)
-      }
-
-      testers.forEach(tester => {
-        tester.only()
-      })
-    })
-
-    // Throw at the end, to provide a better error message.
-    if (missingServices.length > 0) {
-      throw Error(`Unknown services: ${missingServices.join(', ')}`)
-    }
-  }
-
-  /**
-   * Register the tests with Mocha.
-   */
-  toss() {
-    const { testers, baseUrl, skipIntercepted, retry } = this
-    testers.forEach(tester => tester.toss({ baseUrl, skipIntercepted, retry }))
-  }
+  return `${userAgentBase}/${version}`
 }
-export default Runner
+
+export { fetchLimitBytes, getUserAgent }
 </code></pre>
         </article>
     </section>

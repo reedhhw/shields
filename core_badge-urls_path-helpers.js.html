@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: core/service-test-runner/runner.js</title>
+    <title>JSDoc: Source: core/badge-urls/path-helpers.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: core/service-test-runner/runner.js</h1>
+    <h1 class="page-title">Source: core/badge-urls/path-helpers.js</h1>
 
     
 
@@ -27,81 +27,28 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module
+ * Escape a string according to the badge format encoding scheme. Underscores
+ * and dashes in the input are decoded using the rules from
+ * https://github.com/espadrine/gh-badges/issues/12#issuecomment-31518129
+ *
+ * Single underscores become spaces, double underscores become single
+ * underscores, and double dashes become single dashes.
+ *
+ * @param {string} t - The format-encoded string to decode.
+ * @returns {string} The decoded string.
  */
-
-import { loadTesters } from '../base-service/loader.js'
-
-/**
- * Load a collection of ServiceTester objects and register them with Mocha.
- */
-class Runner {
-  constructor({ baseUrl, skipIntercepted, retry }) {
-    this.baseUrl = baseUrl
-    this.skipIntercepted = skipIntercepted
-    this.retry = retry
-  }
-
-  /**
-   * Function to invoke before each test. This is a stub which can be
-   * overridden on instances.
-   */
-  beforeEach() {}
-
-  /**
-   * Prepare the runner by loading up all the ServiceTester objects.
-   */
-  async prepare() {
-    this.testers = (await loadTesters()).flatMap(testerModule =>
-      Object.values(testerModule),
-    )
-    this.testers.forEach(tester => {
-      tester.beforeEach = () => {
-        this.beforeEach()
-      }
-    })
-  }
-
-  _testersForService(service) {
-    return this.testers.filter(t => t.id.toLowerCase().startsWith(service))
-  }
-
-  /**
-   * Limit the test run to the specified services.
-   *
-   * @param {string[]} services An array of service id prefixes to run
-   */
-  only(services) {
-    const normalizedServices = new Set(services.map(v => v.toLowerCase()))
-
-    const missingServices = []
-    normalizedServices.forEach(service => {
-      const testers = this._testersForService(service)
-
-      if (testers.length === 0) {
-        missingServices.push(service)
-      }
-
-      testers.forEach(tester => {
-        tester.only()
-      })
-    })
-
-    // Throw at the end, to provide a better error message.
-    if (missingServices.length > 0) {
-      throw Error(`Unknown services: ${missingServices.join(', ')}`)
-    }
-  }
-
-  /**
-   * Register the tests with Mocha.
-   */
-  toss() {
-    const { testers, baseUrl, skipIntercepted, retry } = this
-    testers.forEach(tester => tester.toss({ baseUrl, skipIntercepted, retry }))
-  }
+function escapeFormat(t) {
+  return (
+    t
+      // Single underscore.
+      .replace(/(^|[^_])((?:__)*)_(?!_)/g, '$1$2 ')
+      // Double underscore and double dash.
+      .replace(/__/g, '_')
+      .replace(/--/g, '-')
+  )
 }
-export default Runner
+
+export { escapeFormat }
 </code></pre>
         </article>
     </section>
