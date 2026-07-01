@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: BaseThunderstoreService</title>
+    <title>JSDoc: Module: services/test-results</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: BaseThunderstoreService</h1>
+    <h1 class="page-title">Module: services/test-results</h1>
 
     
 
@@ -28,40 +28,16 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature">(abstract) </span></span>BaseThunderstoreService<span class="signature">()</span><span class="type-signature"></span></h2>
-        
-            <div class="class-description"><p>Services which query Thunderstore endpoints should extend BaseThunderstoreService</p></div>
-        
-    
 </header>
 
 <article>
     <div class="container-overview">
     
         
+            <div class="description"><p>Helpers for formatting test-result badge messages and colors.</p></div>
+        
 
-    
-    <h2>Constructor</h2>
-    
-
-    
-    <h4 class="name" id="BaseThunderstoreService"><span class="type-signature">(abstract) </span>new BaseThunderstoreService<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
 
 
 <dl class="details">
@@ -93,7 +69,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_thunderstore_thunderstore-base.js.html">services/thunderstore/thunderstore-base.js</a>, <a href="services_thunderstore_thunderstore-base.js.html#line42">line 42</a>
+        <a href="services_test-results.js.html">services/test-results.js</a>, <a href="services_test-results.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -105,24 +81,7 @@
 </dl>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
     
     </div>
 
@@ -149,7 +108,7 @@
     
 
     
-    <h4 class="name" id="fetchPackageMetrics"><span class="type-signature">(async) </span>fetchPackageMetrics<span class="signature">(pkg)</span><span class="type-signature"> &rarr; {Promise.&lt;object>}</span></h4>
+    <h4 class="name" id="~renderTestResultBadge"><span class="type-signature">(inner) </span>renderTestResultBadge<span class="signature">(attrs)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -157,7 +116,9 @@
 
 
 <div class="description">
-    <p>Fetches package metrics from the Thunderstore API.</p>
+    <p>Render badge data for a test result summary.</p>
+<p>Chooses badge color from pass/fail/skip counts and delegates message formatting
+to renderTestResultMessage.</p>
 </div>
 
 
@@ -193,7 +154,7 @@
 
         <tr>
             
-                <td class="name"><code>pkg</code></td>
+                <td class="name"><code>attrs</code></td>
             
 
             <td class="type">
@@ -209,7 +170,7 @@
 
             
 
-            <td class="description last"><p>Package specifier</p>
+            <td class="description last"><p>Refer to individual attrs</p>
                 <h6>Properties</h6>
                 
 
@@ -223,6 +184,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -235,30 +198,131 @@
 
         <tr>
             
-                <td class="name"><code>namespace</code></td>
+                <td class="name"><code>passed</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">number</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>the package namespace</p></td>
+            <td class="description last"><p>Number of passing tests.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>packageName</code></td>
+                <td class="name"><code>failed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Number of failing tests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>skipped</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Number of skipped tests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>total</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Total number of tests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>passedLabel</code></td>
             
 
             <td class="type">
@@ -271,10 +335,119 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>the package name</p></td>
+            <td class="description last"><p>Label for passing tests in verbose mode.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>failedLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Label for failing tests in verbose mode.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>skippedLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Label for skipped tests in verbose mode.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isCompact</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>When true, use compact symbols in the message.</p></td>
         </tr>
 
     
@@ -322,7 +495,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_thunderstore_thunderstore-base.js.html">services/thunderstore/thunderstore-base.js</a>, <a href="services_thunderstore_thunderstore-base.js.html#line52">line 52</a>
+        <a href="services_test-results.js.html">services/test-results.js</a>, <a href="services_test-results.js.html#line97">line 97</a>
     </li></ul></dd>
     
 
@@ -351,9 +524,7 @@
 
         
 <div class="param-desc">
-    <ul>
-<li>Promise containing validated package metrics</li>
-</ul>
+    <p>Badge message and shields color name.</p>
 </div>
 
 
@@ -364,7 +535,450 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;object></span>
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~renderTestResultMessage"><span class="type-signature">(inner) </span>renderTestResultMessage<span class="signature">(attrs)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format test counts into a badge message string.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>attrs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Refer to individual attrs</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>passed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Number of passing tests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>failed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Number of failing tests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>skipped</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Number of skipped tests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>total</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Total number of tests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>passedLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Label for passing tests in verbose mode.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>failedLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Label for failing tests in verbose mode.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>skippedLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Label for skipped tests in verbose mode.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isCompact</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>When true, use compact symbols separated by <code>|</code>.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_test-results.js.html">services/test-results.js</a>, <a href="services_test-results.js.html#line42">line 42</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted message, or <code>no tests</code> when total is zero.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
 
 
     </dd>
